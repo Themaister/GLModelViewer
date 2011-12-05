@@ -1,4 +1,4 @@
-TARGET := test
+TARGET := modelviewer
 
 SOURCES := $(wildcard *.cpp)
 OBJ := $(SOURCES:.cpp=.o)

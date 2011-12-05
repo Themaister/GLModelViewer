@@ -27,6 +27,7 @@ struct Camera
 
    GLMatrix rotation;
 
+   bool mouse;
    Vector<int, 2> delta;
    Vector<int, 2> old_mouse;
 };
@@ -62,18 +63,21 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
    if (cam.rot_right)
       rot_y -= 3 * speed;
 
-   rot_y -= 0.2 * cam.delta(0);
-   rot_x -= 0.3 * cam.delta(1);
+   if (cam.mouse)
+   {
+      rot_y -= 0.2 * cam.delta(0);
+      rot_x -= 0.3 * cam.delta(1);
+   }
+   cam.delta = Vector<int, 2>();
 
    cam.rotation = cam.rotation * Rotate(rot_x, -rot_y, 0.0);
 
    auto translation = Translate(-cam.pos(0), -cam.pos(1), -cam.pos(2));
    mesh.set_camera(Transpose(cam.rotation) * translation);
 
-   cam.delta = Vector<int, 2>();
 }
 
-static void gl_prog()
+static void gl_prog(const std::string &object_path, const std::string &texture_path)
 {
    auto win = Window::get(200, 200, {3, 3});
    win->vsync();
@@ -128,10 +132,12 @@ static void gl_prog()
 
             case 'C':
                glfwDisable(GLFW_MOUSE_CURSOR);
+               camera.mouse = true;
                break;
 
             case 'V':
                glfwEnable(GLFW_MOUSE_CURSOR);
+               camera.mouse = false;
                break;
 
             case 'M':
@@ -171,15 +177,15 @@ static void gl_prog()
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
-   prog->add(FileToString("test.vp"), Shader::Type::Vertex);
-   prog->add(FileToString("test.fp"), Shader::Type::Fragment);
+   prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
+   prog->add(FileToString("shader.fp"), Shader::Type::Fragment);
    prog->link();
 
    GLMatrix proj_matrix = Projection(2.0, 200.0);
 
-   Mesh mesh("CNL.obj");
+   Mesh mesh(object_path);
    mesh.set_shader(prog);
-   mesh.set_texture(Texture::shared("CNL.tga"));
+   mesh.set_texture(Texture::shared(texture_path));
    mesh.set_mvp(proj_matrix);
    mesh.set_ambient({0.15, 0.15, 0.15});
    mesh.set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
@@ -218,11 +224,14 @@ static void gl_prog()
    }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+   if (argc != 3)
+      std::cerr << "Usage: " << argv[0] << " <Object> <Texture>" << std::endl;
+
    try
    {
-      gl_prog();
+      gl_prog(argv[1], argv[2]);
    }
    catch (const Exception& e)
    {
