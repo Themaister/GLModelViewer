@@ -72,6 +72,11 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
    cam.rot_x += rot_x;
    cam.rot_y += rot_y;
 
+   if (cam.rot_x > 85.0)
+      cam.rot_x = 85.0;
+   else if (cam.rot_x < -85.0)
+      cam.rot_x = -85.0;
+
    auto rotation = Rotate(0.0, -cam.rot_y, 0.0);
 
    auto direction = rotation * vec_conv<3, 4>(speed * movement);
