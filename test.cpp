@@ -50,31 +50,31 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
 
    auto direction = cam.rotation * vec_conv<3, 4>(speed * movement);
    cam.pos = cam.pos + direction;
-
    float rot_x = 0.0;
    float rot_y = 0.0;
-
-   if (cam.rot_up)
-      rot_x += 3 * speed;
-   if (cam.rot_down)
-      rot_x -= 3 * speed;
-   if (cam.rot_left)
-      rot_y += 3 * speed;
-   if (cam.rot_right)
-      rot_y -= 3 * speed;
 
    if (cam.mouse)
    {
       rot_y -= 0.2 * cam.delta(0);
       rot_x -= 0.3 * cam.delta(1);
+      cam.delta = Vector<int, 2>();
    }
-   cam.delta = Vector<int, 2>();
+   else
+   {
+      if (cam.rot_up)
+         rot_x += 3 * speed;
+      if (cam.rot_down)
+         rot_x -= 3 * speed;
+      if (cam.rot_left)
+         rot_y += 3 * speed;
+      if (cam.rot_right)
+         rot_y -= 3 * speed;
+   }
 
    cam.rotation = cam.rotation * Rotate(rot_x, -rot_y, 0.0);
 
    auto translation = Translate(-cam.pos(0), -cam.pos(1), -cam.pos(2));
    mesh.set_camera(Transpose(cam.rotation) * translation);
-
 }
 
 static void gl_prog(const std::string &object_path, const std::string &texture_path)
@@ -227,7 +227,10 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
 int main(int argc, char *argv[])
 {
    if (argc != 3)
+   {
       std::cerr << "Usage: " << argv[0] << " <Object> <Texture>" << std::endl;
+      return 1;
+   }
 
    try
    {
