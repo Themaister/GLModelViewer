@@ -25,7 +25,7 @@ struct Camera
    bool rot_up;
    bool rot_down;
 
-   GLMatrix rotation;
+   float rot_x, rot_y;
 
    bool mouse;
    Vector<int, 2> delta;
@@ -48,8 +48,6 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
    if (cam.down)
       movement = movement + vec3({0, -1, 0});
 
-   auto direction = cam.rotation * vec_conv<3, 4>(speed * movement);
-   cam.pos = cam.pos + direction;
    float rot_x = 0.0;
    float rot_y = 0.0;
 
@@ -71,10 +69,16 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
          rot_y -= 3 * speed;
    }
 
-   cam.rotation = cam.rotation * Rotate(rot_x, -rot_y, 0.0);
+   cam.rot_x += rot_x;
+   cam.rot_y += rot_y;
+
+   auto rotation = Rotate(0.0, -cam.rot_y, 0.0);
+
+   auto direction = rotation * vec_conv<3, 4>(speed * movement);
+   cam.pos = cam.pos + direction;
 
    auto translation = Translate(-cam.pos(0), -cam.pos(1), -cam.pos(2));
-   mesh.set_camera(Transpose(cam.rotation) * translation);
+   mesh.set_camera(Rotate(Rotation::X, -cam.rot_x) * Transpose(rotation) * translation);
 }
 
 static void gl_prog(const std::string &object_path, const std::string &texture_path)
@@ -97,7 +101,7 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
    Camera camera;
    std::memset(&camera, 0, sizeof(camera)); 
    camera.pos = {0, 0, 0, 1};
-   camera.rotation = Identity();
+   camera.rot_x = camera.rot_y = 0.0;
 
    win->set_mouse_pos_cb([&camera](int x, int y) {
          Vector<int, 2> new_mouse {x, y};
@@ -167,7 +171,7 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
          if (key == 'R' && pressed)
          {
             camera.pos = {0, 0, 0, 1};
-            camera.rotation = Identity();
+            camera.rot_x = camera.rot_y = 0.0;
          }
       });
 
