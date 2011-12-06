@@ -70,6 +70,21 @@ namespace GL
             return res;
          }
 
+         Vector<T, N>& operator+=(const Vector<T, N> &in)
+         {
+            for (unsigned i = 0; i < N; i++)
+               operator()(i) += in(i);
+            return *this;
+         }
+
+         Vector<T, N>& operator-=(const Vector<T, N> &in)
+         {
+            for (unsigned i = 0; i < N; i++)
+               operator()(i) -= in(i);
+            return *this;
+         }
+
+
          Vector<T, N> operator*(const Vector<T, N> &in) const
          {
             Vector<T, N> res;
@@ -166,6 +181,30 @@ namespace GL
             }
 
             return out;
+         }
+
+         Matrix<T>& operator+=(const Matrix<T> &in)
+         {
+            for (unsigned i = 0; i < 4; i++)
+               for (unsigned j = 0; j < 4; j++)
+                  operator()(i, j) += in(i, j);
+
+            return *this;
+         }
+
+         Matrix<T>& operator-=(const Matrix<T> &in)
+         {
+            for (unsigned i = 0; i < 4; i++)
+               for (unsigned j = 0; j < 4; j++)
+                  operator()(i, j) -= in(i, j);
+
+            return *this;
+         }
+
+         Matrix<T>& operator*=(const Matrix<T> &in)
+         {
+            *this = in * (*this); 
+            return *this;
          }
 
       private:

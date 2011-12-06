@@ -37,13 +37,13 @@ static GLMatrix update_camera(Camera &cam, float speed)
 {
    vec3 movement {0, 0, 0};
    if (cam.forward)
-      movement = movement + vec3({0, 0, -1});
+      movement += vec3({0, 0, -1});
    if (cam.backward)
-      movement = movement + vec3({0, 0, 1});
+      movement += vec3({0, 0, 1});
    if (cam.left)
-      movement = movement + vec3({-1, 0, 0});
+      movement += vec3({-1, 0, 0});
    if (cam.right)
-      movement = movement + vec3({1, 0, 0});
+      movement += vec3({1, 0, 0});
 
    float rot_x = 0.0;
    float rot_y = 0.0;
@@ -78,9 +78,9 @@ static GLMatrix update_camera(Camera &cam, float speed)
 
    auto direction = rotation * Rotate(Rotation::X, cam.rot_x) * vec_conv<3, 4>(speed * movement);
    if (cam.up)
-      direction = direction + vec_conv<3, 4>(speed * vec3({0, 1, 0}));
+      direction += vec_conv<3, 4>(speed * vec3({0, 1, 0}));
    if (cam.down)
-      direction = direction + vec_conv<3, 4>(speed * vec3({0, -1, 0}));
+      direction += vec_conv<3, 4>(speed * vec3({0, -1, 0}));
 
    cam.pos = cam.pos + direction;
 
