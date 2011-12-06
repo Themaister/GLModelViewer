@@ -230,9 +230,6 @@ namespace GL
       for (unsigned i = 0; i < indices; i++)
          out(i) = in(i);
 
-      if (To == 4 && From < 4)
-         out(3) = 1.0;
-
       return out;
    }
 }

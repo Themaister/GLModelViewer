@@ -43,10 +43,6 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
       movement = movement + vec3({-1, 0, 0});
    if (cam.right)
       movement = movement + vec3({1, 0, 0});
-   if (cam.up)
-      movement = movement + vec3({0, 1, 0});
-   if (cam.down)
-      movement = movement + vec3({0, -1, 0});
 
    float rot_x = 0.0;
    float rot_y = 0.0;
@@ -79,7 +75,12 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
 
    auto rotation = Rotate(0.0, -cam.rot_y, 0.0);
 
-   auto direction = rotation * vec_conv<3, 4>(speed * movement);
+   auto direction = rotation * Rotate(Rotation::X, cam.rot_x) * vec_conv<3, 4>(speed * movement);
+   if (cam.up)
+      direction = direction + vec_conv<3, 4>(speed * vec3({0, 1, 0}));
+   if (cam.down)
+      direction = direction + vec_conv<3, 4>(speed * vec3({0, -1, 0}));
+
    cam.pos = cam.pos + direction;
 
    auto translation = Translate(-cam.pos(0), -cam.pos(1), -cam.pos(2));
