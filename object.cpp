@@ -26,10 +26,12 @@ namespace GLU
          indices[i] = 0;
 
       char *end = list;
-      for (unsigned i = 0; i < 3 && *end; i++, end++)
+      for (unsigned i = 0; i < 3; i++, end++)
       {
          char *old = end;
          indices[i] = std::strtoul(old, &end, 0);
+         if (end[0] == '\0')
+            break;
       }
    }
 
