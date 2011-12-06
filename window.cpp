@@ -10,6 +10,8 @@ namespace GL
       if (glfwOpenWindow(width, height, 8, 8, 8, 8, 24, 8, fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW) != GL_TRUE)
          throw Exception("Failed to open GL window ...\n");
 
+      glfwSetWindowTitle("GLModelViewer");
+
       set_callbacks();
    }
 
