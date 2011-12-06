@@ -98,7 +98,7 @@ namespace GLU
          if (indices[i][1])
          {
             unsigned real_indice = indices[i][1] - 1;
-            if (real_indice >= vertices.size())
+            if (real_indice >= tex_coords.size())
                throw GL::Exception("Object face index exceeds maximum recorded texture coordinates!");
 
             for (unsigned j = 0; j < 2; j++)
@@ -108,7 +108,7 @@ namespace GLU
          if (indices[i][2])
          {
             unsigned real_indice = indices[i][2] - 1;
-            if (real_indice >= vertices.size())
+            if (real_indice >= normals.size())
                throw GL::Exception("Object face index exceeds maximum recorded normal coordinates!");
 
             for (unsigned j = 0; j < 3; j++)

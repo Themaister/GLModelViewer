@@ -213,15 +213,15 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
 
       update_camera(mesh, camera, 0.2);
 
-      auto trans_matrix1 = Translate(0.0, 0.0, -25.0) * Scale(15) * rotate_mat;
+      auto trans_matrix1 = Translate(0.0, 0.0, -25.0) * Scale(0.5) * rotate_mat;
       mesh.set_transform(trans_matrix1);
       mesh.render();
 
-      trans_matrix1 = Translate(-20.0, 20.0, -25.0) * Scale(15) * rotate_mat;
+      trans_matrix1 = Translate(-20.0, 20.0, -25.0) * Scale(0.5) * rotate_mat;
       mesh.set_transform(trans_matrix1);
       mesh.render();
 
-      trans_matrix1 = Translate(20.0, -20.0, -70.0) * Scale(15) * rotate_mat;
+      trans_matrix1 = Translate(20.0, -20.0, -70.0) * Scale(0.5) * rotate_mat;
       mesh.set_transform(trans_matrix1);
       mesh.render();
 
