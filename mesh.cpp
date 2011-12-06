@@ -16,6 +16,16 @@ namespace GL
       load_object(obj);
    }
 
+   Mesh::Mesh(const std::vector<Geo::Triangle> &triangles) :
+      num_vertices(0), vbo(GL_ARRAY_BUFFER),
+      m_mvp_trans(false), m_trans_trans(false), 
+      m_normal_trans(false), m_camera_trans(false),
+      m_mvp_reset(false), m_trans_reset(false), 
+      m_normal_reset(false), m_camera_reset(false)
+   {
+      load_object(triangles);
+   }
+
    void Mesh::set_shader(Program::Ptr shader_)
    {
       shader = shader_;
@@ -51,12 +61,9 @@ namespace GL
       Program::unbind();
    }
 
-   void Mesh::load_object(const std::string &obj)
+   void Mesh::load_object(const std::vector<Geo::Triangle> &triangles)
    {
       bind();
-      std::vector<Geo::Triangle> triangles;
-      GLU::LoadObject(obj, triangles);
-
       num_vertices = triangles.size() * 3;
 
       glBufferData(GL_ARRAY_BUFFER, triangles.size() * sizeof(Geo::Triangle), &triangles[0], GL_STATIC_DRAW);
@@ -74,6 +81,11 @@ namespace GL
       glEnableVertexAttribArray(Program::TextureStream);
 
       unbind();
+   }
+
+   void Mesh::load_object(const std::string &obj)
+   {
+      load_object(GLU::LoadObject(obj));
    }
 
    void Mesh::set_mvp(const float *matrix, bool reset, bool transpose)

@@ -13,7 +13,7 @@ namespace GL
       if (glfwReadImage(path.c_str(), &img,
             GLFW_NO_RESCALE_BIT | GLFW_ALPHA_MAP_BIT) != GL_TRUE)
       {
-         throw Exception("Failed to load texture!");
+         throw Exception(GLU::join("Failed to load texture: ", path));
       }
 
       glGenTextures(1, &obj);

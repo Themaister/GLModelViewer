@@ -119,9 +119,9 @@ namespace GLU
       return tri;
    }
 
-   void LoadObject(const std::string &path,
-         std::vector<GL::Geo::Triangle> &triangles)
+   std::vector<GL::Geo::Triangle> LoadObject(const std::string &path)
    {
+      std::vector<GL::Geo::Triangle> triangles;
       vec3 vertices;
       vec3 normals;
       vec2 tex_coords;
@@ -132,13 +132,15 @@ namespace GLU
 
       while (!file.eof())
       {
-         char buf[128];
-         file.getline(buf, sizeof(buf));
+         char buf_[256];
+         std::string buf;
+         file.getline(buf_, sizeof(buf_));
+         buf = buf_;
 
          float elems[3];
          unsigned indices[3][3];
          Attr attr;
-         if (get_attr(buf, attr, elems, indices))
+         if (get_attr(&buf[0], attr, elems, indices))
          {
             switch (attr)
             {
@@ -163,5 +165,94 @@ namespace GLU
             }
          }
       }
+
+      return triangles;
+   }
+
+   std::vector<GL::Mesh::Ptr> LoadTexturedMeshes(const std::string &path)
+   {
+      std::vector<GL::Mesh::Ptr> meshes;
+      std::vector<GL::Geo::Triangle> triangles;
+
+      vec3 vertices;
+      vec3 normals;
+      vec2 tex_coords;
+
+      std::fstream file(path, std::ios::in);
+      if (!file.is_open())
+         throw GL::Exception(join("Failed to open OBJ: ", path));
+
+      std::string directory = path;
+      auto itr = directory.find_last_of("/\\");
+      if (itr != std::string::npos)
+         directory = directory.substr(0, itr + 1);
+
+      std::string current_material;
+
+      while (!file.eof())
+      {
+         char buf_[256];
+         std::string buf;
+         file.getline(buf_, sizeof(buf_));
+         buf = buf_;
+
+         if (std::strstr(buf.c_str(), "texture") == buf.c_str())
+         {
+            if (triangles.size() > 0)
+            {
+               meshes.push_back(GL::Mesh::shared(triangles));
+               if (current_material.size() > 0)
+               {
+                  std::cerr << "Loading texture: " << current_material << std::endl;
+                  meshes.back()->set_texture(GL::Texture::shared(current_material));
+               }
+
+               triangles.clear();
+            }
+
+            current_material = directory;
+            auto path = buf.substr(buf.find_last_of(' ') + 1);
+            path = path.substr(0, path.find_last_of('\r'));
+            current_material += path;
+            current_material += ".tga";
+         }
+
+         float elems[3];
+         unsigned indices[3][3];
+         Attr attr;
+         if (get_attr(&buf[0], attr, elems, indices))
+         {
+            switch (attr)
+            {
+               case Attr::Vertex:
+                  vertices.push_back({{elems[0], elems[1], elems[2]}});
+                  break;
+
+               case Attr::Normal:
+                  normals.push_back({{elems[0], elems[1], elems[2]}});
+                  break;
+                   
+               case Attr::Texture:
+                  tex_coords.push_back({{elems[0], elems[1]}});
+                  break;
+
+               case Attr::Elem:
+                  triangles.push_back(triangle_from_indices(vertices, normals, tex_coords, indices));
+                  break;
+
+               default:
+                  break;
+            }
+         }
+      }
+
+      if (triangles.size() > 0)
+      {
+         meshes.push_back(GL::Mesh::shared(triangles));
+         if (current_material.size() > 0)
+            meshes.back()->set_texture(GL::Texture::shared(current_material));
+      }
+
+      return meshes;
    }
 }

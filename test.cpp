@@ -3,6 +3,7 @@
 #include "shader.hpp"
 #include "structure.hpp"
 #include "mesh.hpp"
+#include "object.hpp"
 #include <assert.h>
 #include <cstring>
 
@@ -32,7 +33,7 @@ struct Camera
    Vector<int, 2> old_mouse;
 };
 
-static void update_camera(Mesh &mesh, Camera &cam, float speed)
+static GLMatrix update_camera(Camera &cam, float speed)
 {
    vec3 movement {0, 0, 0};
    if (cam.forward)
@@ -84,10 +85,10 @@ static void update_camera(Mesh &mesh, Camera &cam, float speed)
    cam.pos = cam.pos + direction;
 
    auto translation = Translate(-cam.pos(0), -cam.pos(1), -cam.pos(2));
-   mesh.set_camera(Rotate(Rotation::X, -cam.rot_x) * Transpose(rotation) * translation);
+   return Rotate(Rotation::X, -cam.rot_x) * Transpose(rotation) * translation;
 }
 
-static void gl_prog(const std::string &object_path, const std::string &texture_path)
+static void gl_prog(const std::string &object_path)
 {
    auto win = Window::get(200, 200, {3, 3});
    win->vsync();
@@ -193,13 +194,15 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
 
    GLMatrix proj_matrix = Projection(2.0, 200.0);
 
-   Mesh mesh(object_path);
-   mesh.set_shader(prog);
-   mesh.set_texture(Texture::shared(texture_path));
-   mesh.set_mvp(proj_matrix);
-   mesh.set_ambient({0.15, 0.15, 0.15});
-   mesh.set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
-   mesh.set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
+   auto meshes = LoadTexturedMeshes(object_path);
+   for (auto mesh : meshes)
+   {
+      mesh->set_shader(prog);
+      mesh->set_mvp(proj_matrix);
+      mesh->set_ambient({0.15, 0.15, 0.15});
+      mesh->set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
+      mesh->set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
+   }
 
    glClearColor(0, 0, 0, 1);
    float frame_count = 0.0;
@@ -207,26 +210,31 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
    {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      //auto rotate_mat = Rotate(Rotation::Z, frame_count * 0.05) * Rotate(Rotation::Y, 180) * Rotate(Rotation::X, frame_count * 0.2);
-      auto rotate_mat = Identity();
-      mesh.set_normal(rotate_mat, true);
+      GLMatrix camera_matrix = update_camera(camera, 0.2);
 
-      update_camera(mesh, camera, 0.2);
+      for (auto mesh : meshes)
+      {
+         //auto rotate_mat = Rotate(Rotation::Z, frame_count * 0.05) * Rotate(Rotation::Y, 180) * Rotate(Rotation::X, frame_count * 0.2);
+         auto rotate_mat = Identity();
+         mesh->set_normal(rotate_mat, true);
 
-      auto trans_matrix1 = Translate(0.0, 0.0, -25.0) * Scale(0.5) * rotate_mat;
-      mesh.set_transform(trans_matrix1);
-      mesh.render();
+         mesh->set_camera(camera_matrix);
 
-      trans_matrix1 = Translate(-20.0, 20.0, -25.0) * Scale(0.5) * rotate_mat;
-      mesh.set_transform(trans_matrix1);
-      mesh.render();
+         auto trans_matrix1 = Translate(0.0, 0.0, -25.0) * Scale(0.2) * rotate_mat;
+         mesh->set_transform(trans_matrix1);
+         mesh->render();
 
-      trans_matrix1 = Translate(20.0, -20.0, -70.0) * Scale(0.5) * rotate_mat;
-      mesh.set_transform(trans_matrix1);
-      mesh.render();
+         trans_matrix1 = Translate(-20.0, 20.0, -25.0) * Scale(0.2) * rotate_mat;
+         mesh->set_transform(trans_matrix1);
+         mesh->render();
 
-      auto light_pos = Translate(0.0, 0.0, -30.0) * Rotate(Rotation::Y, frame_count) * vec4({30.0, 20.0, 0.0, 1.0});
-      mesh.set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
+         trans_matrix1 = Translate(20.0, -20.0, -70.0) * Scale(0.2) * rotate_mat;
+         mesh->set_transform(trans_matrix1);
+         mesh->render();
+
+         auto light_pos = Translate(0.0, 0.0, -30.0) * Rotate(Rotation::Y, frame_count) * vec4({30.0, 20.0, 0.0, 1.0});
+         mesh->set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
+      }
 
       frame_count += 1.0;
 
@@ -236,15 +244,15 @@ static void gl_prog(const std::string &object_path, const std::string &texture_p
 
 int main(int argc, char *argv[])
 {
-   if (argc != 3)
+   if (argc != 2)
    {
-      std::cerr << "Usage: " << argv[0] << " <Object> <Texture>" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " <Object>" << std::endl;
       return 1;
    }
 
    try
    {
-      gl_prog(argv[1], argv[2]);
+      gl_prog(argv[1]);
    }
    catch (const Exception& e)
    {

@@ -6,15 +6,18 @@
 #include "shader.hpp"
 #include "structure.hpp"
 #include "texture.hpp"
+#include "utils.hpp"
 #include <string>
 #include <array>
 
 namespace GL
 {
-   class Mesh
+   class Mesh : private GLU::SmartDefs<Mesh>
    {
       public:
+         DECL_SHARED(Mesh);
          Mesh(const std::string &obj);
+         Mesh(const std::vector<Geo::Triangle> &triangles);
          virtual void render();
          void set_shader(Program::Ptr shader);
 
@@ -56,6 +59,7 @@ namespace GL
          void bind();
          void unbind();
          void load_object(const std::string &obj);
+         void load_object(const std::vector<Geo::Triangle> &obj);
          void set_uniforms();
          void set_lights();
    };
