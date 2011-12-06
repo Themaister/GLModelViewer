@@ -40,7 +40,7 @@ namespace GL
       if (tex)
          tex->bind();
 
-      glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+      GLSYM(glDrawArrays)(GL_TRIANGLES, 0, num_vertices);
 
       VAO::unbind();
       if (tex)
@@ -66,19 +66,19 @@ namespace GL
       bind();
       num_vertices = triangles.size() * 3;
 
-      glBufferData(GL_ARRAY_BUFFER, triangles.size() * sizeof(Geo::Triangle), &triangles[0], GL_STATIC_DRAW);
+      GLSYM(glBufferData)(GL_ARRAY_BUFFER, triangles.size() * sizeof(Geo::Triangle), &triangles[0], GL_STATIC_DRAW);
 
-      glVertexAttribPointer(Program::VertexStream, 3, 
+      GLSYM(glVertexAttribPointer)(Program::VertexStream, 3, 
             GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::VertexOffset);
-      glEnableVertexAttribArray(Program::VertexStream);
+      GLSYM(glEnableVertexAttribArray)(Program::VertexStream);
 
-      glVertexAttribPointer(Program::NormalStream, 3, 
+      GLSYM(glVertexAttribPointer)(Program::NormalStream, 3, 
             GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::NormalOffset);
-      glEnableVertexAttribArray(Program::NormalStream);
+      GLSYM(glEnableVertexAttribArray)(Program::NormalStream);
 
-      glVertexAttribPointer(Program::TextureStream, 2, 
+      GLSYM(glVertexAttribPointer)(Program::TextureStream, 2, 
             GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::TextureOffset);
-      glEnableVertexAttribArray(Program::TextureStream);
+      GLSYM(glEnableVertexAttribArray)(Program::TextureStream);
 
       unbind();
    }
@@ -94,7 +94,7 @@ namespace GL
          throw Exception("No shader bound!\n");
 
       shader->use();
-      glUniformMatrix4fv(shader->uniform("projection_matrix"), 1, 
+      GLSYM(glUniformMatrix4fv)(shader->uniform("projection_matrix"), 1, 
             transpose ? GL_TRUE : GL_FALSE, matrix);
       Program::unbind();
 
@@ -112,7 +112,7 @@ namespace GL
          throw Exception("No shader bound!\n");
 
       shader->use();
-      glUniformMatrix4fv(shader->uniform("trans_matrix"), 1, 
+      GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
             transpose ? GL_TRUE : GL_FALSE, matrix);
       Program::unbind();
 
@@ -130,7 +130,7 @@ namespace GL
          throw Exception("No shader bound!\n");
 
       shader->use();
-      glUniformMatrix4fv(shader->uniform("normal_matrix"), 1, 
+      GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
             transpose ? GL_TRUE : GL_FALSE, matrix);
       Program::unbind();
 
@@ -148,7 +148,7 @@ namespace GL
          throw Exception("No shader bound!\n");
 
       shader->use();
-      glUniformMatrix4fv(shader->uniform("camera_matrix"), 1, 
+      GLSYM(glUniformMatrix4fv)(shader->uniform("camera_matrix"), 1, 
             transpose ? GL_TRUE : GL_FALSE, matrix);
       Program::unbind();
 
@@ -189,26 +189,26 @@ namespace GL
    {
       if (m_mvp_reset)
       {
-         glUniformMatrix4fv(shader->uniform("projection_matrix"), 1, 
+         GLSYM(glUniformMatrix4fv)(shader->uniform("projection_matrix"), 1, 
                m_mvp_trans ? GL_TRUE : GL_FALSE, m_mvp_matrix());
       }
       if (m_trans_reset)
       {
-         glUniformMatrix4fv(shader->uniform("trans_matrix"), 1, 
+         GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
                m_trans_trans ? GL_TRUE : GL_FALSE, m_trans_matrix());
       }
       if (m_normal_reset)
       {
-         glUniformMatrix4fv(shader->uniform("normal_matrix"), 1, 
+         GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
                m_normal_trans ? GL_TRUE : GL_FALSE, m_normal_matrix());
       }
       if (m_camera_reset)
       {
-         glUniformMatrix4fv(shader->uniform("camera_matrix"), 1, 
+         GLSYM(glUniformMatrix4fv)(shader->uniform("camera_matrix"), 1, 
                m_camera_trans ? GL_TRUE : GL_FALSE, m_camera_matrix());
       }
 
-      glUniform1i(shader->uniform("texture"), 0);
+      GLSYM(glUniform1i)(shader->uniform("texture"), 0);
 
       set_lights();
    }
@@ -248,9 +248,9 @@ namespace GL
          lights++;
       }
 
-      glUniform3fv(shader->uniform("light_ambient"), 1, light_ambient()); 
-      glUniform3fv(shader->uniform("lights_color"), lights, &color[0]);
-      glUniform3fv(shader->uniform("lights_pos"), lights, &light[0]);
-      glUniform1i(shader->uniform("lights_count"), lights);
+      GLSYM(glUniform3fv)(shader->uniform("light_ambient"), 1, light_ambient()); 
+      GLSYM(glUniform3fv)(shader->uniform("lights_color"), lights, &color[0]);
+      GLSYM(glUniform3fv)(shader->uniform("lights_pos"), lights, &light[0]);
+      GLSYM(glUniform1i)(shader->uniform("lights_count"), lights);
    }
 }

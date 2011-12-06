@@ -1,13 +1,6 @@
 #ifndef UTILS_H__
 #define UTILS_H__
 
-#include <memory>
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include "gl.hpp"
-#include "structure.hpp"
-
 #define DECL_SHARED(type) using ::GLU::SmartDefs< type >::Ptr; \
    using ::GLU::SmartDefs< type >::shared
 
@@ -16,6 +9,33 @@
 
 #define DECL_SMART(type) DECL_SHARED(type); \
    DECL_UNIQUE(type)
+
+#include <string>
+#include <sstream>
+
+namespace GLU
+{
+   template <class T>
+   std::string join(const T& t)
+   {
+      std::ostringstream stream;
+      stream << t;
+      return stream.str();
+   }
+
+   template <class T, class R, class... P>
+   std::string join(const T& t, const R& r, const P&... p)
+   {
+      std::ostringstream stream;
+      stream << t << join(r, p...);
+      return stream.str();
+   }
+}
+
+#include <memory>
+#include <iomanip>
+#include "gl.hpp"
+#include "structure.hpp"
 
 namespace GLU
 {
@@ -72,22 +92,6 @@ namespace GLU
 
    void Sleep(double sec);
    double Time();
-
-   template <class T>
-   std::string join(const T& t)
-   {
-      std::ostringstream stream;
-      stream << t;
-      return stream.str();
-   }
-
-   template <class T, class R, class... P>
-   std::string join(const T& t, const R& r, const P&... p)
-   {
-      std::ostringstream stream;
-      stream << t << join(r, p...);
-      return stream.str();
-   }
 
    std::string FileToString(const std::string &path);
 

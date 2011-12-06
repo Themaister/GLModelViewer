@@ -94,7 +94,7 @@ static void gl_prog(const std::string &object_path)
    win->vsync();
 
    win->set_resize_cb([](unsigned width, unsigned height) {
-         glViewport(0, 0, width, height);
+         GLSYM(glViewport)(0, 0, width, height);
       });
 
    
@@ -182,10 +182,10 @@ static void gl_prog(const std::string &object_path)
          }
       });
 
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_CULL_FACE);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   GLSYM(glEnable)(GL_DEPTH_TEST);
+   GLSYM(glEnable)(GL_CULL_FACE);
+   GLSYM(glEnable)(GL_BLEND);
+   GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -204,11 +204,11 @@ static void gl_prog(const std::string &object_path)
       mesh->set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
    }
 
-   glClearColor(0, 0, 0, 1);
+   GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
    while (!quit)
    {
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       GLMatrix camera_matrix = update_camera(camera, 0.2);
 
@@ -219,16 +219,16 @@ static void gl_prog(const std::string &object_path)
 
          mesh->set_camera(camera_matrix);
 
-         auto trans_matrix1 = Translate(0.0, 0.0, -25.0) * Scale(2) * rotate_mat;
-         mesh->set_transform(trans_matrix1);
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(5) * rotate_mat;
+         mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix1 = Translate(-20.0, 20.0, -25.0) * Scale(2) * rotate_mat;
-         mesh->set_transform(trans_matrix1);
+         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(5) * rotate_mat;
+         mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix1 = Translate(20.0, -20.0, -70.0) * Scale(2) * rotate_mat;
-         mesh->set_transform(trans_matrix1);
+         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(5) * rotate_mat;
+         mesh->set_transform(trans_matrix);
          mesh->render();
 
          auto light_pos = Translate(0.0, 0.0, -30.0) * Rotate(Rotation::Y, frame_count) * vec4({30.0, 20.0, 0.0, 1.0});

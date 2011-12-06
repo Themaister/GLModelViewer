@@ -7,6 +7,8 @@
 
 namespace GL
 {
+   class Exception;
+
    template <class T, unsigned N = 4>
    class Vector
    {

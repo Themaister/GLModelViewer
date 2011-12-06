@@ -15,4 +15,7 @@ namespace GL
 
    Exception::~Exception() throw()
    {}
+
+   std::map<std::string, void *> symbol_map;
 }
+

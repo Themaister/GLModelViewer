@@ -9,18 +9,18 @@ namespace GL
       int max_len;
       std::vector<char> buf;
 
-      if (glIsShader(shader) == GL_TRUE)
-         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_len);
+      if (GLSYM(glIsShader)(shader) == GL_TRUE)
+         GLSYM(glGetShaderiv)(shader, GL_INFO_LOG_LENGTH, &max_len);
       else
-         glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &max_len);
+         GLSYM(glGetProgramiv)(shader, GL_INFO_LOG_LENGTH, &max_len);
 
       buf = std::vector<char>();
       buf.reserve(max_len);
 
-      if (glIsShader(shader) == GL_TRUE)
-         glGetShaderInfoLog(shader, max_len, &info_len, &buf[0]);
+      if (GLSYM(glIsShader)(shader) == GL_TRUE)
+         GLSYM(glGetShaderInfoLog)(shader, max_len, &info_len, &buf[0]);
       else
-         glGetProgramInfoLog(shader, max_len, &info_len, &buf[0]);
+         GLSYM(glGetProgramInfoLog)(shader, max_len, &info_len, &buf[0]);
 
       msg = GLU::join("Shader error: ", &buf[0]);
    }
@@ -45,13 +45,13 @@ namespace GL
             throw Exception("Invalid shader type.\n");
       }
 
-      shader = glCreateShader(gl_type);
+      shader = GLSYM(glCreateShader)(gl_type);
       const char *src = source.c_str();
-      glShaderSource(shader, 1, &src, 0);
-      glCompileShader(shader);
+      GLSYM(glShaderSource)(shader, 1, &src, 0);
+      GLSYM(glCompileShader)(shader);
 
       GLint status;
-      glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+      GLSYM(glGetShaderiv)(shader, GL_COMPILE_STATUS, &status);
       if (status != GL_TRUE)
          throw ShaderException(shader);
    }
@@ -66,8 +66,8 @@ namespace GL
 
    Shader& Shader::operator=(Shader&& in)
    {
-      if (glIsShader(shader))
-         glDeleteShader(shader);
+      if (GLSYM(glIsShader)(shader))
+         GLSYM(glDeleteShader)(shader);
 
       type = in.type;
       shader = in.shader;
@@ -83,11 +83,11 @@ namespace GL
 
    Shader::~Shader()
    {
-      if (glIsShader(shader))
-         glDeleteShader(shader);
+      if (GLSYM(glIsShader)(shader))
+         GLSYM(glDeleteShader)(shader);
    }
 
-   Program::Program() : program(glCreateProgram()), m_linked(false)
+   Program::Program() : program(GLSYM(glCreateProgram)()), m_linked(false)
    {
       if (program == 0)
          throw Exception("Failed to create program.\n");
@@ -98,17 +98,17 @@ namespace GL
       if (!m_linked)
          throw Exception("Program is not linked!\n");
 
-      glUseProgram(program);
+      GLSYM(glUseProgram)(program);
    }
 
    void Program::link()
    {
       for (auto &shader : shaders)
-         glAttachShader(program, shader.object());
+         GLSYM(glAttachShader)(program, shader.object());
 
-      glLinkProgram(program);
+      GLSYM(glLinkProgram)(program);
       GLint status;
-      glGetProgramiv(program, GL_LINK_STATUS, &status);
+      GLSYM(glGetProgramiv)(program, GL_LINK_STATUS, &status);
       if (status != GL_TRUE)
          throw ShaderException(program);
 
@@ -122,7 +122,7 @@ namespace GL
 
    void Program::add(const Shader &shader)
    {
-      glAttachShader(program, shader.object());
+      GLSYM(glAttachShader)(program, shader.object());
    }
 
    GLuint Program::object() const
@@ -137,18 +137,18 @@ namespace GL
 
    Program::~Program()
    {
-      if (glIsProgram(program))
+      if (GLSYM(glIsProgram)(program))
       {
          for (auto &shader : shaders)
-            glDetachShader(program, shader.object());
-         glDeleteProgram(program);
+            GLSYM(glDetachShader)(program, shader.object());
+         GLSYM(glDeleteProgram)(program);
       }
    }
 
    Program& Program::operator=(Program&& in)
    {
-      if (glIsProgram(program))
-         glDeleteProgram(program);
+      if (GLSYM(glIsProgram)(program))
+         GLSYM(glDeleteProgram)(program);
 
       program = in.program;
       shaders = std::move(in.shaders);
@@ -170,7 +170,7 @@ namespace GL
       if (!m_linked)
          throw Exception("Program not linked.\n");
 
-      auto ret = glGetUniformLocation(program, key.c_str());
+      auto ret = GLSYM(glGetUniformLocation)(program, key.c_str());
       return ret;
    }
 
@@ -178,11 +178,11 @@ namespace GL
    {
       if (!m_linked)
          throw Exception("Program not linked.\n");
-      return glGetAttribLocation(program, key.c_str());
+      return GLSYM(glGetAttribLocation)(program, key.c_str());
    }
 
    void Program::unbind()
    {
-      glUseProgram(0);
+      GLSYM(glUseProgram)(0);
    }
 }

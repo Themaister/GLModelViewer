@@ -20,7 +20,7 @@ namespace GLU
       Elem
    };
 
-   static void parse_indices(char *list, unsigned indices[3])
+   static void parse_indices(char *list, unsigned indices[3], const std::array<size_t, 3> &offsets)
    {
       for (unsigned i = 0; i < 3; i++)
          indices[i] = 0;
@@ -29,13 +29,19 @@ namespace GLU
       for (unsigned i = 0; i < 3; i++, end++)
       {
          char *old = end;
-         indices[i] = std::strtoul(old, &end, 0);
+
+         int indice = std::strtol(old, &end, 0);
+         if (indice > 0)
+            indices[i] = indice;
+         else if (indice < 0) // Relative to end
+            indices[i] = offsets[i] + indice + 1;
+
          if (end[0] == '\0')
             break;
       }
    }
 
-   static bool get_attr(char *line, Attr &attr, float elems[3], unsigned indices[3][3])
+   static bool get_attr(char *line, Attr &attr, float elems[3], unsigned indices[3][3], const std::array<size_t, 3> &offsets)
    {
       char *elem = std::strtok(line, " ");
       if (!elem)
@@ -59,7 +65,7 @@ namespace GLU
          {
             elem = std::strtok(nullptr, " ");
             if (elem)
-               parse_indices(elem, indices[i]);
+               parse_indices(elem, indices[i], offsets);
             else
                return false;
          }
@@ -143,7 +149,8 @@ namespace GLU
          float elems[3];
          unsigned indices[3][3];
          Attr attr;
-         if (get_attr(&buf[0], attr, elems, indices))
+         if (get_attr(&buf[0], attr, elems, indices,
+                  {{ vertices.size(), tex_coords.size(), normals.size() }}))
          {
             switch (attr)
             {
@@ -151,12 +158,12 @@ namespace GLU
                   vertices.push_back({{elems[0], elems[1], elems[2]}});
                   break;
 
-               case Attr::Normal:
-                  normals.push_back({{elems[0], elems[1], elems[2]}});
-                  break;
-                   
                case Attr::Texture:
                   tex_coords.push_back({{elems[0], elems[1]}});
+                  break;
+
+               case Attr::Normal:
+                  normals.push_back({{elems[0], elems[1], elems[2]}});
                   break;
 
                case Attr::Elem:
@@ -189,6 +196,8 @@ namespace GLU
       auto itr = directory.find_last_of("/\\");
       if (itr != std::string::npos)
          directory = directory.substr(0, itr + 1);
+      else
+         directory = "";
 
       std::string current_material;
       std::map<std::string, GL::Texture::Ptr> tex_map;
@@ -233,7 +242,8 @@ namespace GLU
          float elems[3];
          unsigned indices[3][3];
          Attr attr;
-         if (get_attr(&buf[0], attr, elems, indices))
+         if (get_attr(&buf[0], attr, elems, indices,
+                  {{ vertices.size(), tex_coords.size(), normals.size() }}))
          {
             switch (attr)
             {

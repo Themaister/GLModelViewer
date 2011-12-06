@@ -4,41 +4,41 @@ namespace GL
 {
    VAO::VAO()
    {
-      glGenVertexArrays(1, &obj);
+      GLSYM(glGenVertexArrays)(1, &obj);
    }
 
    VAO::~VAO()
    {
-      glDeleteVertexArrays(1, &obj);
+      GLSYM(glDeleteVertexArrays)(1, &obj);
    }
 
    void VAO::unbind()
    {
-      glBindVertexArray(0);
+      GLSYM(glBindVertexArray)(0);
    }
 
    void VAO::bind()
    {
-      glBindVertexArray(obj);
+      GLSYM(glBindVertexArray)(obj);
    }
 
    Buffer::Buffer(GLenum type_) : type(type_)
    {
-      glGenBuffers(1, &obj);
+      GLSYM(glGenBuffers)(1, &obj);
    }
 
    Buffer::~Buffer()
    {
-      glDeleteBuffers(1, &obj);
+      GLSYM(glDeleteBuffers)(1, &obj);
    }
 
    void Buffer::bind()
    {
-      glBindBuffer(type, obj);
+      GLSYM(glBindBuffer)(type, obj);
    }
 
    void Buffer::unbind(GLenum type)
    {
-      glBindBuffer(type, 0);
+      GLSYM(glBindBuffer)(type, 0);
    }
 }

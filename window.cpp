@@ -69,7 +69,7 @@ namespace GL
       if (win && win->resize_cb)
          win->resize_cb(width, height);
       else
-         glViewport(0, 0, width, height);
+         GLSYM(glViewport)(0, 0, width, height);
    }
 
    int GLFWCALL glfw_close_cb()

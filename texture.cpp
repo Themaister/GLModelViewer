@@ -16,7 +16,7 @@ namespace GL
          throw Exception(GLU::join("Failed to load texture: ", path));
       }
 
-      glGenTextures(1, &obj);
+      GLSYM(glGenTextures)(1, &obj);
 
       auto itr = std::find_if(std::begin(bound_textures), std::end(bound_textures),
             [](const Texture *tex) { return tex->bound_index == 0; });
@@ -25,11 +25,11 @@ namespace GL
       if (itr != std::end(bound_textures))
          rebind_tex = *itr;
 
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, obj);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+      GLSYM(glActiveTexture)(GL_TEXTURE0);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, obj);
+      GLSYM(glTexImage2D)(GL_TEXTURE_2D, 0, GL_RGBA,
             img.Width, img.Height, 0, img.Format, GL_UNSIGNED_BYTE, img.Data);
-      glBindTexture(GL_TEXTURE_2D, rebind_tex ? rebind_tex->obj : 0);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, rebind_tex ? rebind_tex->obj : 0);
 
       glfwFreeImage(&img);
    }
@@ -39,7 +39,7 @@ namespace GL
       if (obj)
       {
          unbind();
-         glDeleteTextures(1, &obj);
+         GLSYM(glDeleteTextures)(1, &obj);
       }
    }
 
@@ -85,12 +85,12 @@ namespace GL
 
       bound_textures.push_back(this);
 
-      glActiveTexture(GL_TEXTURE0 + bound_index);
-      glBindTexture(GL_TEXTURE_2D, obj);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_edge(edge));
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_edge(edge));
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter(filter));
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter(filter));
+      GLSYM(glActiveTexture)(GL_TEXTURE0 + bound_index);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, obj);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_edge(edge));
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_edge(edge));
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter(filter));
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter(filter));
    }
 
    void Texture::unbind()
@@ -100,8 +100,8 @@ namespace GL
          bound_textures.erase(std::find_if(std::begin(bound_textures), std::end(bound_textures),
                   [this](const Texture *tex) { return this == tex; }));
 
-         glActiveTexture(GL_TEXTURE0 + bound_index);
-         glBindTexture(GL_TEXTURE_2D, 0);
+         GLSYM(glActiveTexture)(GL_TEXTURE0 + bound_index);
+         GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
       }
 
       bound_index = -1;
