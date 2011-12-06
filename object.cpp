@@ -7,6 +7,7 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <assert.h>
 
 namespace GLU
@@ -188,6 +189,7 @@ namespace GLU
          directory = directory.substr(0, itr + 1);
 
       std::string current_material;
+      std::map<std::string, GL::Texture::Ptr> tex_map;
 
       while (!file.eof())
       {
@@ -204,7 +206,16 @@ namespace GLU
                if (current_material.size() > 0)
                {
                   std::cerr << "Loading texture: " << current_material << std::endl;
-                  meshes.back()->set_texture(GL::Texture::shared(current_material));
+
+                  auto ptr = tex_map[current_material];
+                  if (ptr)
+                     meshes.back()->set_texture(ptr);
+                  else
+                  {
+                     auto tex = GL::Texture::shared(current_material);
+                     meshes.back()->set_texture(tex);
+                     tex_map[current_material] = tex;
+                  }
                }
 
                triangles.clear();
@@ -250,7 +261,17 @@ namespace GLU
       {
          meshes.push_back(GL::Mesh::shared(triangles));
          if (current_material.size() > 0)
-            meshes.back()->set_texture(GL::Texture::shared(current_material));
+         {
+            auto ptr = tex_map[current_material];
+            if (ptr)
+               meshes.back()->set_texture(ptr);
+            else
+            {
+               auto tex = GL::Texture::shared(current_material);
+               meshes.back()->set_texture(tex);
+               tex_map[current_material] = tex;
+            }
+         }
       }
 
       return meshes;

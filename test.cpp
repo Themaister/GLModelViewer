@@ -214,8 +214,7 @@ static void gl_prog(const std::string &object_path)
 
       for (auto mesh : meshes)
       {
-         //auto rotate_mat = Rotate(Rotation::Z, frame_count * 0.05) * Rotate(Rotation::Y, 180) * Rotate(Rotation::X, frame_count * 0.2);
-         auto rotate_mat = Identity();
+         auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
          mesh->set_normal(rotate_mat, true);
 
          mesh->set_camera(camera_matrix);
