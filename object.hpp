@@ -8,7 +8,7 @@
 namespace GLU
 {
    void LoadObject(const std::string &path, 
-         std::vector<GL::Geo::Coord> &coords, std::vector<GLuint> &elems);
+         std::vector<GL::Geo::Triangle> &coords);
 }
 
 #endif

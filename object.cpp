@@ -19,9 +19,22 @@ namespace GLU
       Elem
    };
 
-   static bool get_attr(char *line, Attr &attr, float elems[4], GLuint index[3])
+   static void parse_indices(char *list, unsigned indices[3])
    {
-      const char *elem = std::strtok(line, " ");
+      for (unsigned i = 0; i < 3; i++)
+         indices[i] = 0;
+
+      char *end = list;
+      for (unsigned i = 0; i < 3 && *end; i++, end++)
+      {
+         char *old = end;
+         indices[i] = std::strtoul(old, &end, 0);
+      }
+   }
+
+   static bool get_attr(char *line, Attr &attr, float elems[3], unsigned indices[3][3])
+   {
+      char *elem = std::strtok(line, " ");
       if (!elem)
          return false;
 
@@ -43,14 +56,14 @@ namespace GLU
          {
             elem = std::strtok(nullptr, " ");
             if (elem)
-               index[i] = strtoul(elem, nullptr, 0);
+               parse_indices(elem, indices[i]);
             else
                return false;
          }
       }
       else
       {
-         for (unsigned i = 0; i < 4 && elem; i++)
+         for (unsigned i = 0; i < 3 && elem; i++)
          {
             elem = std::strtok(nullptr, " ");
             if (elem)
@@ -61,46 +74,57 @@ namespace GLU
       return true;
    }
 
-#if 0
-   static void log_mesh(const std::vector<GL::Geo::Coord> &coords, const std::vector<GLuint> &elem_index)
+   typedef std::vector<std::array<float, 3>> vec3;
+   typedef std::vector<std::array<float, 2>> vec2;
+
+   static GL::Geo::Triangle triangle_from_indices(
+         const vec3 &vertices, const vec3 &normals, const vec2 &tex_coords, unsigned indices[3][3])
    {
-      std::cout << "Loaded mesh:" << std::endl;
-      std::cout << "\tCoords:" << coords.size() << std::endl;
-      std::cout << "\tElems:" << elem_index.size() << std::endl;
+      GL::Geo::Triangle tri;
+      std::memset(&tri, 0, sizeof(tri));
 
-      std::cout << "Vertices:" << std::endl;
       for (unsigned i = 0; i < 3; i++)
       {
-         for (unsigned j = 0; j < 3; j++)
+         if (indices[i][0])
          {
-            std::cout << coords[i].vertex[j] << " ";
+            unsigned real_indice = indices[i][0] - 1;
+            if (real_indice >= vertices.size())
+               throw GL::Exception("Object face index exceeds maximum recorded vertices!");
+
+            for (unsigned j = 0; j < 3; j++)
+               tri.coord[i].vertex[j] = vertices[real_indice][j];
          }
-         std::cout << std::endl;
+
+         if (indices[i][1])
+         {
+            unsigned real_indice = indices[i][1] - 1;
+            if (real_indice >= vertices.size())
+               throw GL::Exception("Object face index exceeds maximum recorded texture coordinates!");
+
+            for (unsigned j = 0; j < 2; j++)
+               tri.coord[i].tex[j] = tex_coords[real_indice][j];
+         }
+
+         if (indices[i][2])
+         {
+            unsigned real_indice = indices[i][2] - 1;
+            if (real_indice >= vertices.size())
+               throw GL::Exception("Object face index exceeds maximum recorded normal coordinates!");
+
+            for (unsigned j = 0; j < 3; j++)
+               tri.coord[i].normal[j] = normals[real_indice][j];
+         }
       }
 
-      std::cout << "Normals:" << std::endl;
-      for (unsigned i = 0; i < 3; i++)
-      {
-         for (unsigned j = 0; j < 3; j++)
-         {
-            std::cout << coords[i].normal[j] << " ";
-         }
-         std::cout << std::endl;
-      }
-
-      std::cout << "Elems:" << std::endl;
-      for (unsigned i = 0; i < 3; i++)
-         std::cout << elem_index[i] << ", ";
-      std::cout << std::endl;
+      return tri;
    }
-#endif
 
    void LoadObject(const std::string &path,
-         std::vector<GL::Geo::Coord> &coords, std::vector<GLuint> &elem_index)
+         std::vector<GL::Geo::Triangle> &triangles)
    {
-      std::vector<std::array<float, 3>> vertices;
-      std::vector<std::array<float, 3>> normals;
-      std::vector<std::array<float, 2>> tex_coords;
+      vec3 vertices;
+      vec3 normals;
+      vec2 tex_coords;
 
       std::fstream file(path, std::ios::in);
       if (!file.is_open())
@@ -111,10 +135,10 @@ namespace GLU
          char buf[128];
          file.getline(buf, sizeof(buf));
 
-         float elems[4];
-         GLuint index[3];
+         float elems[3];
+         unsigned indices[3][3];
          Attr attr;
-         if (get_attr(buf, attr, elems, index))
+         if (get_attr(buf, attr, elems, indices))
          {
             switch (attr)
             {
@@ -131,11 +155,7 @@ namespace GLU
                   break;
 
                case Attr::Elem:
-                  if (index[0] == 0 || index[1] == 0 || index[2] == 0)
-                     throw GL::Exception("Invalid object. Element indice of 0!");
-                  elem_index.push_back(index[0] - 1);
-                  elem_index.push_back(index[1] - 1);
-                  elem_index.push_back(index[2] - 1);
+                  triangles.push_back(triangle_from_indices(vertices, normals, tex_coords, indices));
                   break;
 
                default:
@@ -143,25 +163,5 @@ namespace GLU
             }
          }
       }
-
-      size_t indices = std::min(std::min(vertices.size(), normals.size()), tex_coords.size());
-      for (size_t i = 0; i < indices; i++)
-      {
-         GL::Geo::Coord coord;
-         coord.vertex[0] = vertices[i][0];
-         coord.vertex[1] = vertices[i][1];
-         coord.vertex[2] = vertices[i][2];
-         coord.normal[0] = normals[i][0];
-         coord.normal[1] = normals[i][1];
-         coord.normal[2] = normals[i][2];
-         coord.tex[0]    = tex_coords[i][0];
-         coord.tex[1]    = tex_coords[i][1];
-
-         coords.push_back(coord);
-      }
-
-#if 0
-      log_mesh(coords, elem_index);
-#endif
    }
 }

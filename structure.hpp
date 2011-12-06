@@ -11,17 +11,15 @@ namespace GL
       struct Coord
       {
          float vertex[3];
-         float normal[3];
          float tex[2];
-         float color[4];
+         float normal[3];
       };
 
       enum 
       { 
          VertexOffset = offsetof(Coord, vertex),
-         NormalOffset = offsetof(Coord, normal),
          TextureOffset = offsetof(Coord, tex),
-         ColorOffset = offsetof(Coord, color)
+         NormalOffset = offsetof(Coord, normal)
       };
 
       struct Triangle

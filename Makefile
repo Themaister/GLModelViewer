@@ -8,7 +8,7 @@ HEADERS = $(wildcard *.hpp)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) -std=gnu++0x -O3 -g -Wall -pedantic
 
 $(TARGET): $(OBJ)
-	$(CXX) -o $@ $(OBJ) -lglfw
+	$(CXX) -o $@ $(OBJ) -lglfw -lGL
 
 clean:
 	rm -f $(TARGET)

@@ -7,7 +7,7 @@
 namespace GL
 {
    Mesh::Mesh(const std::string &obj) : 
-      elems(0), vbo(GL_ARRAY_BUFFER), ebo(GL_ELEMENT_ARRAY_BUFFER),
+      num_vertices(0), vbo(GL_ARRAY_BUFFER),
       m_mvp_trans(false), m_trans_trans(false), 
       m_normal_trans(false), m_camera_trans(false),
       m_mvp_reset(false), m_trans_reset(false), 
@@ -30,8 +30,9 @@ namespace GL
       if (tex)
          tex->bind();
 
-      glDrawElements(GL_TRIANGLES, elems, GL_UNSIGNED_INT, 0);
+      glDrawArrays(GL_TRIANGLES, 0, num_vertices);
 
+      VAO::unbind();
       if (tex)
          tex->unbind();
       Program::unbind();
@@ -40,7 +41,6 @@ namespace GL
    void Mesh::bind()
    {
       vao.bind();
-      ebo.bind();
       vbo.bind();
    }
 
@@ -48,21 +48,18 @@ namespace GL
    {
       VAO::unbind();
       Buffer::unbind(GL_ARRAY_BUFFER);
-      Buffer::unbind(GL_ELEMENT_ARRAY_BUFFER);
       Program::unbind();
    }
 
    void Mesh::load_object(const std::string &obj)
    {
       bind();
-      std::vector<Geo::Coord> coords;
-      std::vector<GLuint> elements;
-      GLU::LoadObject(obj, coords, elements);
+      std::vector<Geo::Triangle> triangles;
+      GLU::LoadObject(obj, triangles);
 
-      elems = elements.size();
+      num_vertices = triangles.size() * 3;
 
-      glBufferData(GL_ARRAY_BUFFER, coords.size() * sizeof(Geo::Coord), &coords[0], GL_STATIC_DRAW);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements.size() * sizeof(GLuint), &elements[0], GL_STATIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, triangles.size() * sizeof(Geo::Triangle), &triangles[0], GL_STATIC_DRAW);
 
       glVertexAttribPointer(Program::VertexStream, 3, 
             GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::VertexOffset);
@@ -75,10 +72,6 @@ namespace GL
       glVertexAttribPointer(Program::TextureStream, 2, 
             GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::TextureOffset);
       glEnableVertexAttribArray(Program::TextureStream);
-
-      glVertexAttribPointer(Program::ColorStream, 4, 
-            GL_FLOAT, GL_FALSE, sizeof(Geo::Coord), (void*)Geo::ColorOffset);
-      glEnableVertexAttribArray(Program::ColorStream);
 
       unbind();
    }

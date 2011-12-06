@@ -33,8 +33,8 @@ namespace GL
          void set_ambient(const vec3 &color);
 
       private:
-         unsigned elems;
-         Buffer vbo, ebo;
+         unsigned num_vertices;
+         Buffer vbo;
          VAO vao;
 
          bool m_mvp_trans, m_trans_trans, m_normal_trans, m_camera_trans;
