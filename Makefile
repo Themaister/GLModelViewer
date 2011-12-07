@@ -25,6 +25,7 @@ else
    LDFLAGS += -L. -static-libgcc -static-libstdc++
    LIBS := -lopengl32 -lgdi32
    CXXFLAGS += -I.
+   CFLAGS += -I.
 endif
 
 CXXSOURCES := $(wildcard *.cpp)
