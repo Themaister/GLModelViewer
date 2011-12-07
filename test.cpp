@@ -219,15 +219,15 @@ static void gl_prog(const std::string &object_path)
 
          mesh->set_camera(camera_matrix);
 
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(5) * rotate_mat;
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(30) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(5) * rotate_mat;
+         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(30) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(5) * rotate_mat;
+         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(30) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
