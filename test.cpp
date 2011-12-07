@@ -228,18 +228,18 @@ static void gl_prog(const std::string &object_path)
       {
          auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
          mesh->set_normal(rotate_mat, true);
-
          mesh->set_camera(camera_matrix);
 
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale) * rotate_mat;
+         auto base_transform = Scale(scale) * rotate_mat;
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(scale) * rotate_mat;
+         trans_matrix = Translate(-20.0, 20.0, -25.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(scale) * rotate_mat;
+         trans_matrix = Translate(20.0, -20.0, -70.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
