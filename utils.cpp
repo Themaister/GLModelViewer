@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <iterator>
 #include <cmath>
@@ -10,20 +11,13 @@ namespace GLU
 {
    std::string FileToString(const std::string &path)
    {
-      std::fstream file(path, std::ios::in);
+      std::ifstream file(path);
       if (!file.is_open())
          throw GL::Exception(join("Failed to open file: ", path));
 
-      file.seekg(0, std::ios_base::end);
-      long len = file.tellg();
-      file.seekg(0, std::ios_base::beg);
-
-      std::vector<char> vec;
-      vec.reserve(len + 1);
-      vec[len] = '\0';
-
-      file.read(&vec[0], len);
-      return &vec[0];
+      std::stringstream str;
+      str << file.rdbuf();
+      return str.str();
    }
 
    namespace Matrices

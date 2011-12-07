@@ -44,6 +44,7 @@ namespace GL
          friend void sgl_mouse_move_cb(int, int);
 
          void set_callbacks();
+         void set_symbols();
    };
 }
 

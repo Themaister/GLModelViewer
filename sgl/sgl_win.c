@@ -18,7 +18,7 @@
 #include "sgl.h"
 
 #include <GL/gl.h>
-//#include <stdio.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 static HWND g_hwnd;
@@ -36,29 +36,86 @@ static unsigned g_resize_height;
 
 static bool g_fullscreen;
 
+static bool g_ctx_modern;
+static unsigned g_gl_major;
+static unsigned g_gl_minor;
+
 static void setup_pixel_format(HDC hdc)
 {
    static PIXELFORMATDESCRIPTOR pfd = {
-      sizeof(PIXELFORMATDESCRIPTOR),
-      1,
-      PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
-      PFD_TYPE_RGBA,
-      32,
-      0, 0, 0, 0, 0, 0,
-      0,
-      0,
-      0,
-      0, 0, 0, 0,
-      16,
-      0,
-      0,
-      PFD_MAIN_PLANE,
-      0,
-      0, 0, 0
+      .nSize = sizeof(PIXELFORMATDESCRIPTOR),
+      .nVersion = 1,
+      .dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+      .iPixelType = PFD_TYPE_RGBA,
+      .cColorBits = 32,
+      .cDepthBits = 24,
+      .cStencilBits = 8,
+      .iLayerType = PFD_MAIN_PLANE,
    };
 
    int num_pixel_format = ChoosePixelFormat(hdc, &pfd);
    SetPixelFormat(hdc, num_pixel_format, &pfd);
+}
+
+static void create_gl_context(HWND hwnd)
+{
+   g_hdc = GetDC(hwnd);
+   if (!g_hdc)
+   {
+      g_quit = true;
+      return;
+   }
+
+   setup_pixel_format(g_hdc);
+   g_hrc = wglCreateContext(g_hdc);
+   if (!g_hrc)
+   {
+      g_quit = true;
+      return;
+   }
+
+   if (wglMakeCurrent(g_hdc, g_hrc) != TRUE)
+   {
+      g_quit = true;
+      wglDeleteContext(g_hrc);
+   }
+
+   // Take it to the limit! :D
+   if (g_ctx_modern)
+   {
+      fprintf(stderr, "[SGL]: Creating modern OpenGL %u.%u context!\n", g_gl_major, g_gl_minor);
+      typedef HGLRC (*ContextProc)(HDC, HGLRC, const int *);
+      ContextProc proc = (ContextProc)sgl_get_proc_address("wglCreateContextAttribsARB");
+      if (!proc)
+      {
+         fprintf(stderr, "[SGL]: Cannot find wglCreateContextAttribsARB. Forced to use legacy context.\n");
+         return;
+      }
+
+#define WGL_CONTEXT_MAJOR_VERSION_ARB           0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB           0x2092
+#define WGL_CONTEXT_FLAGS_ARB                   0x2094
+#define WGL_CONTEXT_PROFILE_MASK_ARB            0x9126
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB        0x0001
+
+      const int attribs[] = {
+         WGL_CONTEXT_MAJOR_VERSION_ARB, g_gl_major,
+         WGL_CONTEXT_MINOR_VERSION_ARB, g_gl_minor,
+         WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+         0
+      };
+
+      HGLRC new_ctx = proc(g_hdc, NULL, attribs);
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(g_hrc);
+      wglMakeCurrent(g_hdc, new_ctx);
+      g_hrc = new_ctx;
+   }
+
+   int ver_major, ver_minor;
+   glGetIntegerv(GL_MAJOR_VERSION, &ver_major);
+   glGetIntegerv(GL_MINOR_VERSION, &ver_minor);
+   fprintf(stderr, "[SGL]: Got OpenGL version: %u.%u\n", ver_major, ver_minor);
 }
 
 
@@ -78,26 +135,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
          break;
 
       case WM_CREATE:
-         g_hdc = GetDC(hwnd);
-         if (!g_hdc)
-         {
-            g_quit = true;
-            return 0;
-         }
-         setup_pixel_format(g_hdc);
-
-         g_hrc = wglCreateContext(g_hdc);
-         if (!g_hrc)
-         {
-            g_quit = true;
-            return 0;
-         }
-
-         if (wglMakeCurrent(g_hdc, g_hrc) != TRUE)
-         {
-            g_quit = true;
-            wglDeleteContext(g_hrc);
-         }
+         create_gl_context(hwnd);
          return 0;
 
       case WM_CLOSE:
@@ -148,9 +186,13 @@ int sgl_init(const struct sgl_context_options *opts)
    g_quit = false;
    g_resized = false;
 
+   g_ctx_modern = opts->context.style == SGL_CONTEXT_MODERN;
+   g_gl_major = opts->context.major;
+   g_gl_minor = opts->context.minor;
+
    memset(&g_wndclass, 0, sizeof(g_wndclass));
    g_wndclass.cbSize = sizeof(g_wndclass);
-   g_wndclass.style = CS_HREDRAW | CS_VREDRAW;
+   g_wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
    g_wndclass.lpfnWndProc = WndProc;
    g_wndclass.hInstance = GetModuleHandle(NULL);
    g_wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);

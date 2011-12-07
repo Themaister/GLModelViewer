@@ -24,6 +24,7 @@ namespace GL
          throw Exception("Failed to initialize SGL!");
 
       set_callbacks();
+      set_symbols();
    }
 
    Window::~Window()
@@ -36,8 +37,11 @@ namespace GL
    Window::Ptr Window::get(unsigned width, unsigned height,
          const std::pair<unsigned, unsigned> &gl_version, bool fullscreen)
    {
-      if (m_ptr.get() == nullptr)
-         m_ptr = std::shared_ptr<Window>(new Window(width, height, gl_version, fullscreen));
+      if (!m_ptr)
+      {
+         m_ptr = Window::Ptr(new Window(width, height,
+                  gl_version, fullscreen));
+      }
 
       return m_ptr;
    }
@@ -59,6 +63,26 @@ namespace GL
       cbs.mouse_move_cb = sgl_mouse_move_cb;
       sgl_set_input_callbacks(&cbs);
       sgl_set_mouse_mode(false, true, true);
+   }
+
+   void Window::set_symbols()
+   {
+#define _D(sym) { #sym, reinterpret_cast<sgl_function_t>(sym) }
+      static const std::vector<std::pair<std::string, sgl_function_t>>
+         bind_map = {
+            _D(glEnable),
+            _D(glBlendFunc),
+            _D(glClearColor),
+            _D(glTexImage2D),
+            _D(glViewport),
+            _D(glClear),
+            _D(glTexParameteri),
+            _D(glDeleteTextures),
+         };
+#undef _D
+
+      for (auto &bind : bind_map)
+         symbol_map[bind.first] = bind.second;
    }
 
    void Window::vsync(bool activate)

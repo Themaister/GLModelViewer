@@ -30,7 +30,6 @@ struct Camera
 
    bool mouse;
    Vector<int, 2> delta;
-   Vector<int, 2> old_mouse;
 };
 
 static GLMatrix update_camera(Camera &cam, float speed)
@@ -180,10 +179,10 @@ static void gl_prog(const std::string &object_path)
          }
       });
 
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_CULL_FACE);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   GLSYM(glEnable)(GL_DEPTH_TEST);
+   GLSYM(glEnable)(GL_CULL_FACE);
+   GLSYM(glEnable)(GL_BLEND);
+   GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -202,17 +201,15 @@ static void gl_prog(const std::string &object_path)
       mesh->set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
    }
 
-   glClearColor(0, 0, 0, 1);
+   GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
    while (win->alive() && !quit)
    {
       unsigned w, h;
       if (win->check_resize(w, h))
-      {
-         glViewport(0, 0, w, h);
-      }
+         GLSYM(glViewport)(0, 0, w, h);
 
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       GLMatrix camera_matrix = update_camera(camera, 0.2);
 
