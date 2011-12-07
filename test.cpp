@@ -116,7 +116,10 @@ static void gl_prog(const std::string &object_path)
          camera.old_mouse = new_mouse;
       });
 
-   win->set_key_cb([&quit, &camera](unsigned key, bool pressed) {
+   float scale = 1.0;
+   float scale_factor = 1.0;
+
+   win->set_key_cb([&quit, &camera, &scale_factor](unsigned key, bool pressed) {
          quit = (key == GLFW_KEY_ESC) && pressed;
 
          switch (key)
@@ -171,6 +174,14 @@ static void gl_prog(const std::string &object_path)
                camera.rot_right = pressed;
                break;
 
+            case 'Z':
+               scale_factor = pressed ? 0.98 : 1.0;
+               break;
+
+            case 'X':
+               scale_factor = pressed ? 1.02 : 1.0;
+               break;
+
             default:
                break;
          }
@@ -212,6 +223,7 @@ static void gl_prog(const std::string &object_path)
 
       GLMatrix camera_matrix = update_camera(camera, 0.2);
 
+      scale *= scale_factor;
       for (auto mesh : meshes)
       {
          auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
@@ -219,15 +231,15 @@ static void gl_prog(const std::string &object_path)
 
          mesh->set_camera(camera_matrix);
 
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(30) * rotate_mat;
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(30) * rotate_mat;
+         trans_matrix = Translate(-20.0, 20.0, -25.0) * Scale(scale) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(30) * rotate_mat;
+         trans_matrix = Translate(20.0, -20.0, -70.0) * Scale(scale) * rotate_mat;
          mesh->set_transform(trans_matrix);
          mesh->render();
 
