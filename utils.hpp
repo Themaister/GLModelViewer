@@ -90,9 +90,6 @@ namespace GLU
    template<class T>
    unsigned RefCounted<T>::cnt = 0;
 
-   void Sleep(double sec);
-   double Time();
-
    std::string FileToString(const std::string &path);
 
    namespace Matrices

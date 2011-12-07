@@ -13,26 +13,28 @@ endif
 
 ifeq ($(platform), unix)
    TARGET := modelviewer
-   LIBS := $(shell pkg-config libglfw --libs)
-   CXXFLAGS += $(shell pkg-config libglfw --cflags)
+   LIBS := -lGL -lX11 -lXxf86vm
 else ifeq ($(platform), osx)
    TARGET := modelviewer
-   LIBS := $(shell pkg-config libglfw --libs) -framework OpenGL
-   CXXFLAGS += $(shell pkg-config libglfw --cflags)
+   LIBS := -framework OpenGL
 else
    TARGET := modelviewer.exe
+   CC = gcc
    CXX = g++
    LDFLAGS += -L. -static-libgcc -static-libstdc++
-   CXXFLAGS += -I.
-   LIBS := -lglfw
+   LIBS := -lopengl32
 endif
 
-SOURCES := $(wildcard *.cpp)
-OBJ := $(SOURCES:.cpp=.o)
+CXXSOURCES := $(wildcard *.cpp)
+CSOURCES := sgl/sgl.o
+OBJ := $(CXXSOURCES:.cpp=.o) $(CSOURCES:.c=.o)
 HEADERS = $(wildcard *.hpp)
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) -std=gnu++0x -O3 -g -Wall -pedantic
+
+%.o: %.c $(HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS) -std=gnu99 -O3 -g -Wall -pedantic
 
 $(TARGET): $(OBJ)
 	$(CXX) -o $@ $(OBJ) $(LIBS) $(LDFLAGS)

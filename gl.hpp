@@ -2,18 +2,7 @@
 #ifndef GL_HPP__
 #define GL_HPP__
 
-#define GL_GLEXT_PROTOTYPES
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
-#include <OpenGL/glfw.h>
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glfw.h>
-#endif
-
+#include "sgl/sgl.h"
 
 #include <stdexcept>
 #include <string>
@@ -39,25 +28,22 @@ namespace GL
          std::string msg;
    };
 
-   extern std::map<std::string, void *> symbol_map;
+   extern std::map<std::string, sgl_function_t> symbol_map;
 
    template <class Func, class T>
    inline Func sym_to_func(const T &gl_sym)
    {
-      void *symbol = symbol_map[gl_sym];
+      sgl_function_t symbol = symbol_map[gl_sym];
       if (!symbol)
       {
-         symbol = glfwGetProcAddress(gl_sym);
+         symbol = sgl_get_proc_address(gl_sym);
          if (!symbol)
             throw Exception(GLU::join("GL Symbol ", gl_sym, " not found!"));
 
          symbol_map[gl_sym] = symbol;
       }
 
-      static_assert(sizeof(Func) == sizeof(void *), "Function pointer size does not match void* ...");
-      Func out;
-      std::memcpy(&out, &symbol, sizeof(out));
-      return out;
+      return reinterpret_cast<Func>(symbol);
    }
 }
 

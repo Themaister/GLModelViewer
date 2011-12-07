@@ -31,6 +31,15 @@ namespace GL
          int bound_index;
 
          static std::list<Texture *> bound_textures;
+
+         struct Image
+         {
+            unsigned width;
+            unsigned height;
+            std::vector<uint32_t> pixels;
+         };
+
+         Image load_tga(const std::string &path);
    };
 }
 

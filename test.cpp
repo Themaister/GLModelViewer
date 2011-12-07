@@ -93,24 +93,12 @@ static void gl_prog(const std::string &object_path)
    auto win = Window::get(200, 200, {3, 3});
    win->vsync();
 
-   win->set_resize_cb([](unsigned width, unsigned height) {
-         GLSYM(glViewport)(0, 0, width, height);
-      });
-
-   
-   bool quit = false;
-   win->set_close_cb([&quit]() -> bool {
-         std::cerr << "Closing!" << std::endl;
-         quit = true;
-         return true;
-      });
-
    Camera camera;
    std::memset(&camera, 0, sizeof(camera)); 
    camera.pos = {0, 0, 0, 1};
    camera.rot_x = camera.rot_y = 0.0;
 
-   win->set_mouse_pos_cb([&camera](int x, int y) {
+   win->set_mouse_move_cb([&camera](int x, int y) {
          Vector<int, 2> new_mouse {x, y};
          camera.delta = new_mouse - camera.old_mouse;
          camera.old_mouse = new_mouse;
@@ -118,67 +106,68 @@ static void gl_prog(const std::string &object_path)
 
    float scale = 1.0;
    float scale_factor = 1.0;
+   bool quit = false;
 
    win->set_key_cb([&quit, &camera, &scale_factor](unsigned key, bool pressed) {
-         quit = (key == GLFW_KEY_ESC) && pressed;
+         quit |= key == SGLK_ESCAPE && pressed;
 
          switch (key)
          {
-            case GLFW_KEY_UP:
+            case SGLK_UP:
                camera.forward = pressed;
                break;
 
-            case GLFW_KEY_DOWN:
+            case SGLK_DOWN:
                camera.backward = pressed;
                break;
 
-            case GLFW_KEY_LEFT:
+            case SGLK_LEFT:
                camera.left = pressed;
                break;
 
-            case GLFW_KEY_RIGHT:
+            case SGLK_RIGHT:
                camera.right = pressed;
                break;
 
-            case GLFW_KEY_SPACE:
+            case SGLK_SPACE:
                camera.up = pressed;
                break;
 
-            case 'C':
-               glfwDisable(GLFW_MOUSE_CURSOR);
+            case SGLK_c:
+               sgl_set_mouse_mode(true, true, false);
                camera.mouse = true;
                break;
 
-            case 'V':
-               glfwEnable(GLFW_MOUSE_CURSOR);
+            case SGLK_v:
+               sgl_set_mouse_mode(false, true, false);
                camera.mouse = false;
                break;
 
-            case 'M':
+            case SGLK_m:
                camera.down = pressed;
                break;
 
-            case 'W':
+            case SGLK_w:
                camera.rot_up = pressed;
                break;
 
-            case 'S':
+            case SGLK_s:
                camera.rot_down = pressed;
                break;
 
-            case 'A':
+            case SGLK_a:
                camera.rot_left = pressed;
                break;
 
-            case 'D':
+            case SGLK_d:
                camera.rot_right = pressed;
                break;
 
-            case 'Z':
+            case SGLK_z:
                scale_factor = pressed ? 0.98 : 1.0;
                break;
 
-            case 'X':
+            case SGLK_x:
                scale_factor = pressed ? 1.02 : 1.0;
                break;
 
@@ -186,17 +175,17 @@ static void gl_prog(const std::string &object_path)
                break;
          }
 
-         if (key == 'R' && pressed)
+         if (key == SGLK_r && pressed)
          {
             camera.pos = {0, 0, 0, 1};
             camera.rot_x = camera.rot_y = 0.0;
          }
       });
 
-   GLSYM(glEnable)(GL_DEPTH_TEST);
-   GLSYM(glEnable)(GL_CULL_FACE);
-   GLSYM(glEnable)(GL_BLEND);
-   GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_CULL_FACE);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -215,11 +204,17 @@ static void gl_prog(const std::string &object_path)
       mesh->set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
    }
 
-   GLSYM(glClearColor)(0, 0, 0, 1);
+   glClearColor(0, 0, 0, 1);
    float frame_count = 0.0;
-   while (!quit)
+   while (win->alive() && !quit)
    {
-      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      unsigned w, h;
+      if (win->check_resize(w, h))
+      {
+         glViewport(0, 0, w, h);
+      }
+
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       GLMatrix camera_matrix = update_camera(camera, 0.2);
 
@@ -236,6 +231,14 @@ static void gl_prog(const std::string &object_path)
          mesh->render();
 
          trans_matrix = Translate(-20.0, 20.0, -25.0) * base_transform;
+         mesh->set_transform(trans_matrix);
+         mesh->render();
+
+         trans_matrix = Translate(-20.0, 70.0, -80.0) * base_transform;
+         mesh->set_transform(trans_matrix);
+         mesh->render();
+
+         trans_matrix = Translate(50.0, 0.0, -40.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
 

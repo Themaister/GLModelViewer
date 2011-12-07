@@ -2,6 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
+#include <iterator>
 
 namespace GL
 {
@@ -9,12 +11,7 @@ namespace GL
 
    Texture::Texture(const std::string &path) : obj(0), bound_index(-1)
    {
-      GLFWimage img;
-      if (glfwReadImage(path.c_str(), &img,
-            GLFW_NO_RESCALE_BIT | GLFW_ALPHA_MAP_BIT) != GL_TRUE)
-      {
-         throw Exception(GLU::join("Failed to load texture: ", path));
-      }
+      auto image = load_tga(path);
 
       GLSYM(glGenTextures)(1, &obj);
 
@@ -28,10 +25,10 @@ namespace GL
       GLSYM(glActiveTexture)(GL_TEXTURE0);
       GLSYM(glBindTexture)(GL_TEXTURE_2D, obj);
       GLSYM(glTexImage2D)(GL_TEXTURE_2D, 0, GL_RGBA,
-            img.Width, img.Height, 0, img.Format, GL_UNSIGNED_BYTE, img.Data);
-      GLSYM(glBindTexture)(GL_TEXTURE_2D, rebind_tex ? rebind_tex->obj : 0);
+            image.width, image.height, 0,
+            GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, &image.pixels[0]);
 
-      glfwFreeImage(&img);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, rebind_tex ? rebind_tex->obj : 0);
    }
 
    Texture::~Texture()
@@ -105,6 +102,61 @@ namespace GL
       }
 
       bound_index = -1;
+   }
+
+   Texture::Image Texture::load_tga(const std::string &path)
+   {
+      Image img;
+
+      std::vector<uint8_t> in_file;
+      std::ifstream file(path, std::ios::in | std::ios::binary);
+      if (!file.is_open())
+         throw Exception(GLU::join("Cannot open file: ", path));
+
+      file >> std::noskipws;
+      std::copy(std::istream_iterator<uint8_t>(file),
+            std::istream_iterator<uint8_t>(),
+            std::back_inserter(in_file));
+
+      if (in_file[2] != 2)
+         throw Exception("Uncompressed RGB Targa not supported.");
+
+      img.width = in_file[12] + in_file[13] * 256;
+      img.height = in_file[14] + in_file[15] * 256;
+
+      img.pixels.resize(img.width * img.height);
+
+      const uint8_t *tmp = &in_file[18];
+      unsigned bits = in_file[16];
+
+      if (bits == 32)
+      {
+         for (unsigned i = 0; i < img.width * img.height; i++)
+         {
+            uint32_t b = tmp[i * 4 + 0];
+            uint32_t g = tmp[i * 4 + 1];
+            uint32_t r = tmp[i * 4 + 2];
+            uint32_t a = tmp[i * 4 + 3];
+
+            img.pixels[i] = (b << 24) | (g << 16) | (r << 8) | a;
+         }
+      }
+      else if (bits == 24)
+      {
+         for (unsigned i = 0; i < img.width * img.height; i++)
+         {
+            uint32_t b = tmp[i * 3 + 0];
+            uint32_t g = tmp[i * 3 + 1];
+            uint32_t r = tmp[i * 3 + 2];
+            uint32_t a = 0xff;
+
+            img.pixels[i] = (b << 24) | (g << 16) | (r << 8) | a;
+         }
+      }
+      else
+         throw Exception(GLU::join("Targa with bit depth ", bits, " not supported!"));
+
+      return img;
    }
 }
 

@@ -8,16 +8,6 @@
 
 namespace GLU
 {
-   void Sleep(double sec)
-   {
-      glfwSleep(sec);
-   }
-
-   double Time()
-   {
-      return glfwGetTime();
-   }
-
    std::string FileToString(const std::string &path)
    {
       std::fstream file(path, std::ios::in);
