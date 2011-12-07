@@ -50,8 +50,8 @@ static GLMatrix update_camera(Camera &cam, float speed)
 
    if (cam.mouse)
    {
-      rot_y -= 0.2 * cam.delta(0);
-      rot_x -= 0.3 * cam.delta(1);
+      rot_y -= 0.08 * cam.delta(0);
+      rot_x -= 0.12 * cam.delta(1);
       cam.delta = Vector<int, 2>();
    }
    else
@@ -99,9 +99,7 @@ static void gl_prog(const std::string &object_path)
    camera.rot_x = camera.rot_y = 0.0;
 
    win->set_mouse_move_cb([&camera](int x, int y) {
-         Vector<int, 2> new_mouse {x, y};
-         camera.delta = new_mouse - camera.old_mouse;
-         camera.old_mouse = new_mouse;
+         camera.delta = { x, y };
       });
 
    float scale = 1.0;
@@ -139,7 +137,7 @@ static void gl_prog(const std::string &object_path)
                break;
 
             case SGLK_v:
-               sgl_set_mouse_mode(false, true, false);
+               sgl_set_mouse_mode(false, true, true);
                camera.mouse = false;
                break;
 

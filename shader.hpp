@@ -24,16 +24,12 @@ namespace GL
             Fragment
          };
 
-         Shader();
          Shader(const std::string &source, Type type);
 
          ~Shader();
 
          GLuint object() const;
          void operator=(const Shader&) = delete;
-
-         Shader(Shader&&);
-         Shader& operator=(Shader&&);
 
       private:
          GLuint shader;
@@ -61,8 +57,6 @@ namespace GL
          GLint attrib(const std::string &key) const;
 
          void operator=(const Program&) = delete;
-         Program(Program&&);
-         Program& operator=(Program&&);
 
          enum
          {
@@ -74,7 +68,7 @@ namespace GL
 
       private:
          GLuint program;
-         std::vector<Shader> shaders;
+         std::vector<Shader::Ptr> shaders;
          bool m_linked;
    };
 

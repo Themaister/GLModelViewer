@@ -58,7 +58,7 @@ namespace GL
       cbs.key_cb = sgl_key_cb;
       cbs.mouse_move_cb = sgl_mouse_move_cb;
       sgl_set_input_callbacks(&cbs);
-      sgl_set_mouse_mode(false, true, false);
+      sgl_set_mouse_mode(false, true, true);
    }
 
    void Window::vsync(bool activate)

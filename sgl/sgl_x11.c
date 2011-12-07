@@ -442,8 +442,8 @@ static void handle_motion(int x, int y);
 
 int sgl_is_alive(void)
 {
-   int old_mouse_x = g_mouse_last_x;
-   int old_mouse_y = g_mouse_last_y;
+   int old_x = g_mouse_last_x;
+   int old_y = g_mouse_last_y;
 
    XEvent event;
    while (XPending(g_dpy))
@@ -489,6 +489,9 @@ int sgl_is_alive(void)
 
    if (g_mouse_relative && g_input_cbs.mouse_move_cb)
    {
+      int old_mouse_x = g_mouse_grabbed ? g_last_width >> 1 : old_x;
+      int old_mouse_y = g_mouse_grabbed ? g_last_height >> 1 : old_y;
+
       int delta_x = g_mouse_last_x - old_mouse_x;
       int delta_y = g_mouse_last_y - old_mouse_y;
       
@@ -666,11 +669,9 @@ static void handle_motion(int x, int y)
 
    if (!g_mouse_relative)
       g_input_cbs.mouse_move_cb(x, y);
-   else
-   {
-      g_mouse_last_x = x;
-      g_mouse_last_y = y;
-   }
+
+   g_mouse_last_x = x;
+   g_mouse_last_y = y;
 }
 
 void sgl_set_mouse_mode(int grab, int relative, int visible)

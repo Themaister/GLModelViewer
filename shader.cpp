@@ -25,9 +25,6 @@ namespace GL
       msg = GLU::join("Shader error: ", &buf[0]);
    }
 
-   Shader::Shader() : shader(0), type(Shader::Type::None)
-   {}
-
    Shader::Shader(const std::string &source, Shader::Type type)
    {
       GLenum gl_type;
@@ -64,23 +61,6 @@ namespace GL
       return shader;
    }
 
-   Shader& Shader::operator=(Shader&& in)
-   {
-      if (GLSYM(glIsShader)(shader))
-         GLSYM(glDeleteShader)(shader);
-
-      type = in.type;
-      shader = in.shader;
-      in.shader = 0;
-      in.type = Shader::Type::None;
-      return *this;
-   }
-
-   Shader::Shader(Shader&& in)
-   {
-      *this = std::move(in);
-   }
-
    Shader::~Shader()
    {
       if (GLSYM(glIsShader)(shader))
@@ -103,8 +83,8 @@ namespace GL
 
    void Program::link()
    {
-      for (auto &shader : shaders)
-         GLSYM(glAttachShader)(program, shader.object());
+      for (auto shader : shaders)
+         GLSYM(glAttachShader)(program, shader->object());
 
       GLSYM(glLinkProgram)(program);
       GLint status;
@@ -117,7 +97,7 @@ namespace GL
 
    void Program::add(const std::string &src, Shader::Type type)
    {
-      shaders.push_back(Shader(src, type));
+      shaders.push_back(Shader::shared(src, type));
    }
 
    void Program::add(const Shader &shader)
@@ -139,30 +119,10 @@ namespace GL
    {
       if (GLSYM(glIsProgram)(program))
       {
-         for (auto &shader : shaders)
-            GLSYM(glDetachShader)(program, shader.object());
+         for (auto shader : shaders)
+            GLSYM(glDetachShader)(program, shader->object());
          GLSYM(glDeleteProgram)(program);
       }
-   }
-
-   Program& Program::operator=(Program&& in)
-   {
-      if (GLSYM(glIsProgram)(program))
-         GLSYM(glDeleteProgram)(program);
-
-      program = in.program;
-      shaders = std::move(in.shaders);
-      in.shaders.clear();
-      m_linked = in.m_linked;
-
-      in.program = 0;
-      in.m_linked = false;
-      return *this;
-   }
-
-   Program::Program(Program&& in)
-   {
-      *this = std::move(in);
    }
 
    GLint Program::uniform(const std::string &key) const

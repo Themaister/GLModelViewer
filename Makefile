@@ -13,7 +13,8 @@ endif
 
 ifeq ($(platform), unix)
    TARGET := modelviewer
-   LIBS := -lGL -lX11 -lXxf86vm
+   LIBS := -lGL $(shell pkg-config x11 xxf86vm --libs)
+   CFLAGS += $(shell pkg-config x11 xxf86vm --cflags)
 else ifeq ($(platform), osx)
    TARGET := modelviewer
    LIBS := -framework OpenGL
@@ -33,7 +34,7 @@ HEADERS = $(wildcard *.hpp)
 %.o: %.cpp $(HEADERS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) -std=gnu++0x -O3 -g -Wall -pedantic
 
-%.o: %.c $(HEADERS)
+%.o: %.c $(HEADERS) $(wildcard sgl/*.c)
 	$(CC) -c -o $@ $< $(CFLAGS) -std=gnu99 -O3 -g -Wall -pedantic
 
 $(TARGET): $(OBJ)
