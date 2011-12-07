@@ -29,6 +29,7 @@ namespace GL
 
    Window::~Window()
    {
+      std::cerr << "[SGL]: Tearing down SGL!" << std::endl;
       sgl_deinit();
    }
 
@@ -67,6 +68,8 @@ namespace GL
 
    void Window::set_symbols()
    {
+      // GL 1.1 stuff is not found dynamically in Windows. :(
+      // Statically initialize them.
 #define _D(sym) { #sym, reinterpret_cast<sgl_function_t>(sym) }
       static const std::vector<std::pair<std::string, sgl_function_t>>
          bind_map = {

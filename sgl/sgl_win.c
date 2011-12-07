@@ -140,14 +140,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
 
       case WM_CLOSE:
       case WM_DESTROY:
-         if (!g_quit)
-         {
-            wglMakeCurrent(g_hdc, NULL);
-            wglDeleteContext(g_hrc);
-            g_quit = true;
-         }
-         return 0;
-
       case WM_QUIT:
          g_quit = true;
          return 0;
@@ -278,6 +270,12 @@ void sgl_deinit(void)
 {
    g_inited = false;
 
+   if (g_quit)
+   {
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(g_hrc);
+   }
+
    DestroyWindow(g_hwnd);
    UnregisterClassA("SGL Window", GetModuleHandle(NULL));
 
@@ -317,13 +315,6 @@ void sgl_set_swap_interval(unsigned interval)
 void sgl_swap_buffers(void)
 {
    SwapBuffers(g_hdc);
-
-   MSG msg;
-   while (PeekMessage(&msg, g_hwnd, 0, 0, PM_REMOVE))
-   {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-   }
 }
 
 int sgl_has_focus(void)
@@ -333,6 +324,12 @@ int sgl_has_focus(void)
 
 int sgl_is_alive(void)
 {
+   MSG msg;
+   while (PeekMessage(&msg, g_hwnd, 0, 0, PM_REMOVE))
+   {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+   }
    return !g_quit;
 }
 
