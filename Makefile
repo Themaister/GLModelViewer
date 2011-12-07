@@ -17,7 +17,7 @@ ifeq ($(platform), unix)
    CXXFLAGS += $(shell pkg-config libglfw --cflags)
 else ifeq ($(platform), osx)
    TARGET := modelviewer
-   LIBS := $(shell pkg-config libglfw --libs)
+   LIBS := $(shell pkg-config libglfw --libs) -framework OpenGL
    CXXFLAGS += $(shell pkg-config libglfw --cflags)
 else
    TARGET := modelviewer.exe
