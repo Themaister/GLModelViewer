@@ -3,9 +3,17 @@
 #define GL_HPP__
 
 #define GL_GLEXT_PROTOTYPES
+
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/glfw.h>
+#else
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glfw.h>
+#endif
+
 
 #include <stdexcept>
 #include <string>

@@ -22,7 +22,7 @@ else ifeq ($(platform), osx)
 else
    TARGET := modelviewer.exe
    CXX = g++
-   LDFLAGS += -L.
+   LDFLAGS += -L. -static-libgcc -static-libstdc++
    CXXFLAGS += -I.
    LIBS := -lglfw
 endif
