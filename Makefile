@@ -23,7 +23,8 @@ else
    CC = gcc
    CXX = g++
    LDFLAGS += -L. -static-libgcc -static-libstdc++
-   LIBS := -lopengl32
+   LIBS := -lopengl32 -lgdi32
+   CXXFLAGS += -I.
 endif
 
 CXXSOURCES := $(wildcard *.cpp)

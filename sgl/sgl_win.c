@@ -14,10 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define SGL_EXPOSE_INTERNAL
 #include "sgl.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 #include <GL/gl.h>
 //#include <stdio.h>
@@ -306,5 +304,17 @@ void sgl_get_handles(struct sgl_handles *handles)
    handles->hwnd = g_hwnd;
    handles->hglrc = g_hrc;
    handles->hdc = g_hdc;
+}
+
+void sgl_set_input_callbacks(const struct sgl_input_callbacks *cbs)
+{
+   (void)cbs;
+}
+
+void sgl_set_mouse_mode(int capture, int relative, int visible)
+{
+   (void)capture;
+   (void)relative;
+   (void)visible;
 }
 
