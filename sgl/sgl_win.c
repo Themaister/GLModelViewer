@@ -289,7 +289,6 @@ int sgl_init(const struct sgl_context_options *opts)
    sgl_set_swap_interval(opts->swap_interval);
 
    g_inited = true;
-
    return SGL_OK;
 }
 
@@ -373,7 +372,8 @@ int sgl_is_alive(void)
          if (delta_x || delta_y)
             g_input_cbs.mouse_move_cb(delta_x, delta_y);
       }
-      g_mouse_delta_invalid = false;
+      else
+         g_mouse_delta_invalid = false;
 
       if (g_mouse_grabbed)
       {
@@ -489,11 +489,7 @@ static void handle_mouse_move(int x, int y)
       return;
 
    if (!g_mouse_relative)
-   {
       g_input_cbs.mouse_move_cb(x, y);
-      g_mouse_last_x = x;
-      g_mouse_last_y = y;
-   }
 }
 
 static void handle_mouse_press(UINT message, int x, int y)
