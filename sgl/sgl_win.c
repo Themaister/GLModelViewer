@@ -423,6 +423,7 @@ void sgl_set_mouse_mode(int capture, int relative, int visible)
 
    g_mouse_relative = relative;
 
+   g_mouse_delta_invalid = true;
    if (capture && !g_mouse_grabbed)
    {
       RECT rect;
@@ -435,7 +436,6 @@ void sgl_set_mouse_mode(int capture, int relative, int visible)
       g_mouse_last_x = p.x;
       g_mouse_last_y = p.y;
       g_mouse_grabbed = true;
-      g_mouse_delta_invalid = true;
    }
    else if (!capture && g_mouse_grabbed)
    {
