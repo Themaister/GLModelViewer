@@ -137,7 +137,7 @@ static void gl_prog(const std::string &object_path)
 
             case SGLK_v:
                sgl_set_mouse_mode(false, true, true);
-               camera.mouse = false;
+               camera.mouse = true;
                break;
 
             case SGLK_m:
