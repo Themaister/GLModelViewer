@@ -457,6 +457,8 @@ static const struct key_map bind_map[] = {
    { VK_DOWN, SGLK_DOWN },
    { VK_LEFT, SGLK_LEFT },
    { VK_RIGHT, SGLK_RIGHT },
+   { VK_SPACE, SGLK_SPACE },
+   { 'M', SGLK_m },
    { 'W', SGLK_w },
    { 'A', SGLK_a },
    { 'S', SGLK_s },
