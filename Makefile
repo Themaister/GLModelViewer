@@ -22,11 +22,14 @@ else
    TARGET := modelviewer.exe
    CC = gcc
    CXX = g++
-   LDFLAGS += -L. -static-libgcc -static-libstdc++
+   LDFLAGS += -L. -static-libgcc -static-libstdc++ -s
    LIBS := -lopengl32 -lgdi32
    CXXFLAGS += -I.
    CFLAGS += -I.
 endif
+
+CXXFLAGS += -O2 -Wall -pedantic -std=gnu++0x
+CFLAGS += -O2 -Wall -pedantic -std=gnu99
 
 CXXSOURCES := $(wildcard *.cpp)
 CSOURCES := sgl/sgl.o
@@ -34,10 +37,10 @@ OBJ := $(CXXSOURCES:.cpp=.o) $(CSOURCES:.c=.o)
 HEADERS = $(wildcard *.hpp)
 
 %.o: %.cpp $(HEADERS)
-	$(CXX) -c -o $@ $< $(CXXFLAGS) -std=gnu++0x -O3 -g -Wall -pedantic
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 %.o: %.c $(HEADERS) $(wildcard sgl/*.c)
-	$(CC) -c -o $@ $< $(CFLAGS) -std=gnu99 -O3 -g -Wall -pedantic
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(TARGET): $(OBJ)
 	$(CXX) -o $@ $(OBJ) $(LIBS) $(LDFLAGS)
