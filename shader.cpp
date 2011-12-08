@@ -1,5 +1,6 @@
 #include "shader.hpp"
 #include "utils.hpp"
+#include <iostream>
 
 namespace GL
 {
@@ -92,6 +93,11 @@ namespace GL
       if (status != GL_TRUE)
          throw ShaderException(program);
 
+      GLSYM(glValidateProgram)(program);
+      GLSYM(glGetProgramiv)(program, GL_VALIDATE_STATUS, &status);
+      if (status != GL_TRUE)
+         throw ShaderException(program);
+
       m_linked = true;
    }
 
@@ -130,8 +136,23 @@ namespace GL
       if (!m_linked)
          throw Exception("Program not linked.\n");
 
-      auto ret = GLSYM(glGetUniformLocation)(program, key.c_str());
-      return ret;
+      return GLSYM(glGetUniformLocation)(program, key.c_str());
+   }
+
+   GLuint Program::uniform_block_index(const std::string &key) const
+   {
+      if (!m_linked)
+         throw Exception("Program not linked.\n");
+
+      return GLSYM(glGetUniformBlockIndex)(program, key.c_str());
+   }
+
+   void Program::uniform_block_binding(unsigned block, unsigned index)
+   {
+      if (!m_linked)
+         throw Exception("Program not linked.\n");
+
+      GLSYM(glUniformBlockBinding)(program, block, index);
    }
 
    GLint Program::attrib(const std::string &key) const

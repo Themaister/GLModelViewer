@@ -181,8 +181,8 @@ static void gl_prog(const std::string &object_path)
 
    GLSYM(glEnable)(GL_DEPTH_TEST);
    GLSYM(glEnable)(GL_CULL_FACE);
-   GLSYM(glEnable)(GL_BLEND);
-   GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   //GLSYM(glEnable)(GL_BLEND);
+   //GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -190,16 +190,14 @@ static void gl_prog(const std::string &object_path)
    prog->link();
 
    GLMatrix proj_matrix = Projection(2.0, 200.0);
+   Mesh::set_projection(proj_matrix);
+   Mesh::set_ambient({0.15, 0.15, 0.15});
+   Mesh::set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
+   Mesh::set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
 
    auto meshes = LoadTexturedMeshes(object_path);
    for (auto mesh : meshes)
-   {
       mesh->set_shader(prog);
-      mesh->set_mvp(proj_matrix);
-      mesh->set_ambient({0.15, 0.15, 0.15});
-      mesh->set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
-      mesh->set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
-   }
 
    GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
@@ -212,13 +210,13 @@ static void gl_prog(const std::string &object_path)
       GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       GLMatrix camera_matrix = update_camera(camera, 0.2);
+      Mesh::set_camera(camera_matrix);
 
       scale *= scale_factor;
       for (auto mesh : meshes)
       {
          auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
-         mesh->set_normal(rotate_mat, true);
-         mesh->set_camera(camera_matrix);
+         mesh->set_normal(rotate_mat);
 
          auto base_transform = Scale(scale) * rotate_mat;
          auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
@@ -241,8 +239,10 @@ static void gl_prog(const std::string &object_path)
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         auto light_pos = Translate(0.0, 0.0, -30.0) * Rotate(Rotation::Y, frame_count) * vec4({30.0, 20.0, 0.0, 1.0});
-         mesh->set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
+         auto light_pos = Translate(0.0, 0.0, -30.0) *
+            Rotate(Rotation::Y, frame_count) *
+            vec4({30.0, 20.0, 0.0, 1.0});
+         Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
       }
 
       frame_count += 1.0;

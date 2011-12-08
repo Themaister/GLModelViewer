@@ -1,4 +1,5 @@
 #include "buffer.hpp"
+#include <iostream>
 
 namespace GL
 {
@@ -41,4 +42,36 @@ namespace GL
    {
       GLSYM(glBindBuffer)(type, 0);
    }
+
+   UniformBuffer::UniformBuffer() : bound_target(0), win_hold(Window::get())
+   {
+      GLSYM(glGenBuffers)(1, &obj);
+   }
+
+   UniformBuffer::~UniformBuffer()
+   {
+      GLSYM(glDeleteBuffers)(1, &obj);
+   }
+
+   void UniformBuffer::bind()
+   {
+      GLSYM(glBindBuffer)(GL_UNIFORM_BUFFER, obj);
+   }
+
+   void UniformBuffer::unbind()
+   {
+      GLSYM(glBindBuffer)(GL_UNIFORM_BUFFER, 0);
+   }
+
+   void UniformBuffer::bind(unsigned index)
+   {
+      GLSYM(glBindBufferBase)(GL_UNIFORM_BUFFER, index, obj);
+      bound_target = index;
+   }
+
+   void UniformBuffer::bind_block(Program::Ptr prog, unsigned block_index)
+   {
+      prog->uniform_block_binding(block_index, bound_target);
+   }
 }
+

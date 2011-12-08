@@ -86,6 +86,7 @@ namespace GL
 
       for (auto &bind : bind_map)
          symbol_map[bind.first] = bind.second;
+      symbol_map.grant(get());
    }
 
    void Window::vsync(bool activate)
@@ -126,5 +127,7 @@ namespace GL
       if (win && win->mouse_move_cb)
          win->mouse_move_cb(x, y);
    }
+
+   SymbolTable symbol_map;
 }
 

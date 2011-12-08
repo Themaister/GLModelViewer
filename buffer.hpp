@@ -3,10 +3,12 @@
 
 #include "gl.hpp"
 #include "utils.hpp"
+#include "shader.hpp"
+#include "window.hpp"
 
 namespace GL
 {
-   class VAO : private GLU::SmartDefs<VAO>
+   class VAO : private GLU::SmartDefs<VAO>, public GLResource
    {
       public:
          DECL_SHARED(VAO);
@@ -22,7 +24,7 @@ namespace GL
          GLuint obj;
    };
 
-   class Buffer : private GLU::SmartDefs<Buffer>
+   class Buffer : private GLU::SmartDefs<Buffer>, public GLResource
    {
       public:
          DECL_SHARED(Buffer);
@@ -37,6 +39,27 @@ namespace GL
       private:
          GLenum type;
          GLuint obj;
+   };
+
+   class UniformBuffer : private GLU::SmartDefs<UniformBuffer>, public GLResource
+   {
+      public:
+         DECL_SHARED(UniformBuffer);
+         UniformBuffer();
+         ~UniformBuffer();
+
+         void bind();
+         void bind(unsigned index);
+         static void unbind();
+
+         void bind_block(Program::Ptr prog, unsigned block_index);
+
+         void operator=(const UniformBuffer&) = delete;
+
+      private:
+         GLuint obj;
+         unsigned bound_target;
+         Window::Ptr win_hold;
    };
 }
 

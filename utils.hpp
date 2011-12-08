@@ -30,12 +30,25 @@ namespace GLU
       stream << t << join(r, p...);
       return stream.str();
    }
+
+   template <class T>
+   class RefCounted
+   {
+      public:
+         unsigned& ref()
+         {
+            return cnt;
+         }
+
+      private:
+         static unsigned cnt;
+   };
+   template <class T>
+   unsigned RefCounted<T>::cnt = 0;
 }
 
 #include <memory>
 #include <iomanip>
-#include "gl.hpp"
-#include "structure.hpp"
 
 namespace GLU
 {
@@ -74,24 +87,15 @@ namespace GLU
          return std::unique_ptr<T>(new T(std::forward<P>(p)...));
       }
    };
-
-   template<class T>
-   class RefCounted
-   {
-      public:
-         unsigned& ref()
-         {
-            return cnt;
-         }
-
-      private:
-         static unsigned cnt;
-   };
-   template<class T>
-   unsigned RefCounted<T>::cnt = 0;
-
+   
    std::string FileToString(const std::string &path);
+}
 
+#include "gl.hpp"
+#include "structure.hpp"
+
+namespace GLU
+{
    namespace Matrices
    {
       GL::GLMatrix Projection(GLfloat zNear, GLfloat zFar);

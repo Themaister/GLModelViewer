@@ -28,8 +28,15 @@ else
    CFLAGS += -I.
 endif
 
-CXXFLAGS += -O2 -Wall -pedantic -std=gnu++0x
-CFLAGS += -O2 -Wall -pedantic -std=gnu99
+CXXFLAGS += -Wall -pedantic -std=gnu++0x
+CFLAGS += -Wall -pedantic -std=gnu99
+ifeq ($(DEBUG), 1)
+   CXXFLAGS += -O0 -g
+   CFLAGS += -O0 -g
+else
+   CXXFLAGS += -O2
+   CFLAGS += -O2
+endif
 
 CXXSOURCES := $(wildcard *.cpp)
 CSOURCES := sgl/sgl.o

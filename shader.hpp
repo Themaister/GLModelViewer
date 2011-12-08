@@ -13,7 +13,7 @@ namespace GL
          ShaderException(GLuint shader);
    };
 
-   class Shader : private GLU::SmartDefs<Shader>
+   class Shader : private GLU::SmartDefs<Shader>, public GLResource
    {
       public:
          DECL_SHARED(Shader);
@@ -36,7 +36,7 @@ namespace GL
          Type type;
    };
 
-   class Program : private GLU::SmartDefs<Program>
+   class Program : private GLU::SmartDefs<Program>, public GLResource
    {
       public:
          DECL_SHARED(Program);
@@ -54,6 +54,8 @@ namespace GL
          bool linked() const;
 
          GLint uniform(const std::string &key) const;
+         GLuint uniform_block_index(const std::string &key) const;
+         void uniform_block_binding(unsigned block, unsigned index);
          GLint attrib(const std::string &key) const;
 
          void operator=(const Program&) = delete;
@@ -71,7 +73,7 @@ namespace GL
          std::vector<Shader::Ptr> shaders;
          bool m_linked;
    };
-
 }
 
 #endif
+

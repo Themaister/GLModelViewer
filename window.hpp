@@ -1,9 +1,9 @@
+#include "utils.hpp"
+
 #ifndef WINDOW_HPP__
 #define WINDOW_HPP__
-
-#include "gl.hpp"
+#include "sgl/sgl.h"
 #include "sgl/sgl_keysym.h"
-#include "utils.hpp"
 #include <functional>
 #include <utility>
 
@@ -46,6 +46,41 @@ namespace GL
          void set_callbacks();
          void set_symbols();
    };
+
+   // Every global resource that manages GL state must hold a reference
+   // to the window in question.
+   class GLResource
+   {
+      public:
+         GLResource(bool init = true)
+         {
+            if (init)
+               win_hold = GL::Window::get();
+         }
+
+         void grant(Window::Ptr ptr) { win_hold = ptr; }
+
+      private:
+         Window::Ptr win_hold;
+   };
+
+   class SymbolTable : public GLResource
+   {
+      public:
+         SymbolTable() : GLResource(false)
+         {}
+
+         sgl_function_t& operator[](const std::string &str)
+         {
+            return syms[str];
+         }
+
+      private:
+         std::map<std::string, sgl_function_t> syms;
+   };
+
+   extern SymbolTable symbol_map;
 }
 
 #endif
+

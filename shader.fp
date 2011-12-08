@@ -4,13 +4,16 @@ out vec4 FragColor;
 in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
-uniform sampler2D texture;
 
 #define MAX_LIGHTS 8
-uniform int lights_count;
-uniform vec3 lights_pos[MAX_LIGHTS];
-uniform vec3 lights_color[MAX_LIGHTS];
-uniform vec3 light_ambient;
+layout(std140) uniform Lights
+{
+   uniform vec3 light_ambient;
+   uniform vec3 lights_pos[MAX_LIGHTS];
+   uniform vec3 lights_color[MAX_LIGHTS];
+   uniform int lights_count;
+};
+uniform sampler2D texture;
 
 vec3 colorconv(vec3 c)
 {
@@ -37,9 +40,12 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
 
 void main()
 {
+   vec4 tex = texture2D(texture, tex_coord);
+   if (tex.a < 0.5) // Alpha test
+      discard;
+
    vec3 result = light_ambient;
 
-   vec4 tex = texture2D(texture, tex_coord);
    int count = min(MAX_LIGHTS, lights_count);
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 20.0, 5.0);

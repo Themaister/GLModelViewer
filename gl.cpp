@@ -15,7 +15,5 @@ namespace GL
 
    Exception::~Exception() throw()
    {}
-
-   std::map<std::string, sgl_function_t> symbol_map;
 }
 

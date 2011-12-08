@@ -27,20 +27,25 @@ namespace GL
       protected:
          std::string msg;
    };
+}
 
-   extern std::map<std::string, sgl_function_t> symbol_map;
+#include "window.hpp"
 
+namespace GL
+{
    template <class Func, class T>
    inline Func sym_to_func(const T &gl_sym)
    {
-      sgl_function_t symbol = symbol_map[gl_sym];
+      auto &map = symbol_map[gl_sym];
+
+      sgl_function_t symbol = map;
       if (!symbol)
       {
          symbol = sgl_get_proc_address(gl_sym);
          if (!symbol)
             throw Exception(GLU::join("GL Symbol ", gl_sym, " not found!"));
 
-         symbol_map[gl_sym] = symbol;
+         map = symbol;
       }
 
       return reinterpret_cast<Func>(symbol);

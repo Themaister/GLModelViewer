@@ -8,7 +8,7 @@
 
 namespace GL
 {
-   class Texture : private GLU::SmartDefs<Texture>
+   class Texture : private GLU::SmartDefs<Texture>, public GLResource
    {
       public:
          DECL_SHARED(Texture);
