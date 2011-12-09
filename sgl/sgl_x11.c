@@ -369,6 +369,7 @@ void sgl_deinit(void)
 {
    if (g_ctx)
    {
+      glXMakeCurrent(g_dpy, None, NULL);
       glXDestroyContext(g_dpy, g_ctx);
       g_ctx = NULL;
    }
