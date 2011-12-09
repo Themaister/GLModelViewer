@@ -81,7 +81,9 @@ namespace GL
             _D(glClear),
             _D(glTexParameteri),
             _D(glDeleteTextures),
+#if 0
             _D(glGetError),
+#endif
          };
 #undef _D
 
@@ -102,9 +104,11 @@ namespace GL
 
    bool Window::alive()
    {
+#if 0
       GLenum err = GLSYM(glGetError)();
       if (err != GL_NO_ERROR)
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));
+#endif
 
       return sgl_is_alive();
    }

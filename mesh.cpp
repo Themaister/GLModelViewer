@@ -142,7 +142,7 @@ namespace GL
          if (!data)
             throw Exception("Failed to map Uniform transform buffer!");
          std::memcpy(data, &transforms, sizeof(transforms));
-         glUnmapBuffer(GL_UNIFORM_BUFFER);
+         GLSYM(glUnmapBuffer)(GL_UNIFORM_BUFFER);
 
          UniformBuffer::unbind();
          transforms_changed = false;
@@ -180,11 +180,11 @@ namespace GL
          }
 
          lights_unibuf->bind();
-         void *data = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(lights), GL_MAP_WRITE_BIT);
+         void *data = GLSYM(glMapBufferRange)(GL_UNIFORM_BUFFER, 0, sizeof(lights), GL_MAP_WRITE_BIT);
          if (!data)
             throw Exception("Failed to map Uniform light buffer!");
          std::memcpy(data, &li, sizeof(li));
-         glUnmapBuffer(GL_UNIFORM_BUFFER);
+         GLSYM(glUnmapBuffer)(GL_UNIFORM_BUFFER);
 
          UniformBuffer::unbind();
          lights_changed = false;
