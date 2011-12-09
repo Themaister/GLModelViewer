@@ -181,8 +181,6 @@ static void gl_prog(const std::string &object_path)
 
    GLSYM(glEnable)(GL_DEPTH_TEST);
    GLSYM(glEnable)(GL_CULL_FACE);
-   //GLSYM(glEnable)(GL_BLEND);
-   //GLSYM(glBlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -217,10 +215,16 @@ static void gl_prog(const std::string &object_path)
       GLMatrix camera_matrix = update_camera(camera, 0.2);
       Mesh::set_camera(camera_matrix);
 
+      auto light_pos = Translate(0.0, 0.0, -30.0) *
+         Rotate(Rotation::Y, frame_count) *
+         vec4({30.0, 3.0, 0.0, 1.0});
+      Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
+
       scale *= scale_factor;
       for (auto mesh : meshes)
       {
-         auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
+         //auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
+         auto rotate_mat = Rotate(Rotation::Y, 180);
          mesh->set_normal(rotate_mat);
 
          auto base_transform = Scale(scale) * rotate_mat;
@@ -228,30 +232,8 @@ static void gl_prog(const std::string &object_path)
          mesh->set_transform(trans_matrix);
          mesh->render();
 
-         trans_matrix = Translate(-20.0, 20.0, -25.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
-
-         trans_matrix = Translate(-20.0, 70.0, -80.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
-
-         trans_matrix = Translate(50.0, 0.0, -40.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
-
-         trans_matrix = Translate(20.0, -20.0, -70.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
-
-         auto light_pos = Translate(0.0, 0.0, -30.0) *
-            Rotate(Rotation::Y, frame_count) *
-            vec4({30.0, 20.0, 0.0, 1.0});
-         Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
       }
-
       frame_count += 1.0;
-
       win->flip();
    }
 }

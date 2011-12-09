@@ -216,8 +216,6 @@ namespace GLU
                meshes.push_back(GL::Mesh::shared(triangles));
                if (current_material.size() > 0)
                {
-                  std::cerr << "Loading texture: " << current_material << std::endl;
-
                   auto ptr = tex_map[current_material];
                   if (ptr)
                      meshes.back()->set_texture(ptr);
