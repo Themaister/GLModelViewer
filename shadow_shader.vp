@@ -14,25 +14,10 @@ layout(std140) uniform Transforms
 uniform mat4 trans_matrix;
 uniform mat4 normal_matrix;
 
-out vec3 normal;
-out vec3 model_vector;
-out vec2 tex_coord;
-out vec3 shadow;
-
 void main()
 {
    vec4 world_vector = trans_matrix * in_pos;
-
-   vec4 projected_light = projection_matrix * light_matrix * world_vector;
-   vec3 shadow_pre = projected_light.xyz / projected_light.w;
-   shadow = 0.5 * (shadow_pre + 1.0);
-
    vec4 camera_vector = camera_matrix * world_vector;
    gl_Position = projection_matrix * camera_vector;
-
-   normal = (normal_matrix * in_normal).xyz;
-   model_vector = world_vector.xyz;
-
-   tex_coord = in_tex;
 }
 

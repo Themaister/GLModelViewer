@@ -27,6 +27,7 @@ namespace GL
       GLSYM(glTexImage2D)(GL_TEXTURE_2D, 0, GL_RGBA,
             image.width, image.height, 0,
             GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, &image.pixels[0]);
+      GLSYM(glGenerateMipmap)(GL_TEXTURE_2D);
 
       GLSYM(glBindTexture)(GL_TEXTURE_2D, rebind_tex ? rebind_tex->obj : 0);
    }
@@ -87,7 +88,7 @@ namespace GL
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_edge(edge));
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_edge(edge));
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter(filter));
-      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter(filter));
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    }
 
    void Texture::unbind()

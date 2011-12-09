@@ -4,7 +4,7 @@ layout(location = 0) out vec4 out_color;
 in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
-in float shadow_z;
+in vec3 shadow;
 
 #define MAX_LIGHTS 8
 layout(std140) uniform Lights
@@ -47,12 +47,11 @@ void main()
    if (tex.a < 0.5) // Alpha test
       discard;
 
-   vec3 result = light_ambient;
-
+   vec3 result = vec3(0.0);
    int count = min(MAX_LIGHTS, lights_count);
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 20.0, 5.0);
 
-   vec2 screen_coord = gl_FragCoord.xy / vec2(viewport_size);
-   out_color = vec4(tex.rgb * result * (shadow_z <= (texture2D(shadow_texture, screen_coord).z + 0.001) ? 1.0 : 0.2), tex.a);
+   float nearest_z = texture2D(shadow_texture, shadow.xy).z + 0.005;
+   out_color = vec4(tex.rgb * (light_ambient + result * (shadow.z <= nearest_z ? 1.0 : 0.0)), tex.a);
 }
