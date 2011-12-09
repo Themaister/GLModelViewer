@@ -189,7 +189,8 @@ static void gl_prog(const std::string &object_path)
    prog->add(FileToString("shader.fp"), Shader::Type::Fragment);
    prog->link();
 
-   GLMatrix proj_matrix = Projection(2.0, 200.0);
+   unsigned width = 200, height = 200;
+   auto proj_matrix = Projection(2.0, 200.0);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
@@ -203,9 +204,13 @@ static void gl_prog(const std::string &object_path)
    float frame_count = 0.0;
    while (win->alive() && !quit)
    {
-      unsigned w, h;
-      if (win->check_resize(w, h))
-         GLSYM(glViewport)(0, 0, w, h);
+      if (win->check_resize(width, height))
+      {
+         GLSYM(glViewport)(0, 0, width, height);
+
+         auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
+         Mesh::set_projection(proj_matrix);
+      }
 
       GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
