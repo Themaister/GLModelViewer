@@ -112,12 +112,6 @@ namespace GL
       set_lights();
    }
 
-   void Mesh::set_viewport_size(unsigned width, unsigned height)
-   {
-      lights_changed = true;
-      lights.viewport_size = {width, height};
-   }
-
    void Mesh::set_light(unsigned index, const vec3 &pos, const vec3 &color)
    {
       lights_changed = true;
@@ -180,7 +174,6 @@ namespace GL
          Lights li;
          li.lights = 0;
          li.light_ambient = lights.light_ambient;
-         li.viewport_size = lights.viewport_size;
          for (unsigned i = 0; i < max_lights; i++)
          {
             if (!light_enabled[i])

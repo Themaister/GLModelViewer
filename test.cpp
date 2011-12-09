@@ -197,7 +197,6 @@ static void gl_prog(const std::string &object_path)
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_shader(prog);
-   Mesh::set_viewport_size(640, 480);
 
    auto meshes = LoadTexturedMeshes(object_path);
 
@@ -213,8 +212,6 @@ static void gl_prog(const std::string &object_path)
       if (win->check_resize(width, height))
       {
          GLSYM(glViewport)(0, 0, width, height);
-         Mesh::set_viewport_size(width, height);
-
          auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
          Mesh::set_projection(proj_matrix);
       }
@@ -237,10 +234,6 @@ static void gl_prog(const std::string &object_path)
          auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
-
-         trans_matrix = Translate(0.0, 0.0, -35.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
       }
       shadow_buf.unbind();
 
@@ -252,16 +245,7 @@ static void gl_prog(const std::string &object_path)
       Mesh::set_camera(camera_matrix);
 
       for (auto mesh : meshes)
-      {
-         auto base_transform = Scale(scale);
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
-         mesh->set_transform(trans_matrix);
          mesh->render();
-
-         trans_matrix = Translate(0.0, 0.0, -35.0) * base_transform;
-         mesh->set_transform(trans_matrix);
-         mesh->render();
-      }
       shadow_buf.unbind_texture();
 
       frame_count += 1.0;

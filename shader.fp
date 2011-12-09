@@ -12,7 +12,6 @@ layout(std140) uniform Lights
    vec3 light_ambient;
    vec3 lights_pos[MAX_LIGHTS];
    vec3 lights_color[MAX_LIGHTS];
-   ivec2 viewport_size;
    int lights_count;
 };
 uniform sampler2D texture;
@@ -52,6 +51,6 @@ void main()
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 20.0, 5.0);
 
-   float nearest_z = texture2D(shadow_texture, shadow.xy).z + 0.005;
+   float nearest_z = texture2D(shadow_texture, shadow.xy).z + 0.001;
    out_color = vec4(tex.rgb * (light_ambient + result * (shadow.z <= nearest_z ? 1.0 : 0.0)), tex.a);
 }
