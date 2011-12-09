@@ -111,8 +111,11 @@ namespace GLU
          Z
       };
 
+      GL::vec3 Normalize(const GL::vec3 &dir);
+
       GL::GLMatrix Rotate(Rotation dir, GLfloat degrees);
       GL::GLMatrix Rotate(GLfloat x_deg, GLfloat y_deg, GLfloat z_deg);
+      GL::GLMatrix MapRotate(const GL::vec3 &dir);
 
       GL::GLMatrix Transpose(const GL::GLMatrix &mat);
 

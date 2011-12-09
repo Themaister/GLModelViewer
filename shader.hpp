@@ -63,9 +63,8 @@ namespace GL
          enum
          {
             VertexStream = 0,
-            NormalStream = 1,
-            TextureStream = 2,
-            ColorStream = 3
+            TextureStream = 1,
+            NormalStream = 2
          };
 
       private:

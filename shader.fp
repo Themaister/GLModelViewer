@@ -1,19 +1,22 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 out_color;
 in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
+in float shadow_z;
 
 #define MAX_LIGHTS 8
 layout(std140) uniform Lights
 {
-   uniform vec3 light_ambient;
-   uniform vec3 lights_pos[MAX_LIGHTS];
-   uniform vec3 lights_color[MAX_LIGHTS];
-   uniform int lights_count;
+   vec3 light_ambient;
+   vec3 lights_pos[MAX_LIGHTS];
+   vec3 lights_color[MAX_LIGHTS];
+   ivec2 viewport_size;
+   int lights_count;
 };
 uniform sampler2D texture;
+uniform sampler2D shadow_texture;
 
 vec3 colorconv(vec3 c)
 {
@@ -50,5 +53,6 @@ void main()
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 20.0, 5.0);
 
-   FragColor = vec4(tex.rgb * result, tex.a);
+   vec2 screen_coord = gl_FragCoord.xy / vec2(viewport_size);
+   out_color = vec4(tex.rgb * result * (shadow_z <= (texture2D(shadow_texture, screen_coord).z + 0.001) ? 1.0 : 0.2), tex.a);
 }

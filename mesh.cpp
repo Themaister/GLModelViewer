@@ -88,6 +88,12 @@ namespace GL
       normal_matrix = matrix;
    }
 
+   void Mesh::set_light_transform(const GLMatrix &matrix)
+   {
+      transforms_changed = true;
+      transforms.light_matrix = matrix;
+   }
+
    void Mesh::set_projection(const GLMatrix &matrix)
    {
       transforms_changed = true;
@@ -104,6 +110,12 @@ namespace GL
    {
       set_transforms();
       set_lights();
+   }
+
+   void Mesh::set_viewport_size(unsigned width, unsigned height)
+   {
+      lights_changed = true;
+      lights.viewport_size = {width, height};
    }
 
    void Mesh::set_light(unsigned index, const vec3 &pos, const vec3 &color)
@@ -132,6 +144,7 @@ namespace GL
    void Mesh::set_transforms()
    {
       GLSYM(glUniform1i)(shader->uniform("texture"), 0);
+      GLSYM(glUniform1i)(shader->uniform("shadow_texture"), 1);
 
       if (transforms_changed)
       {
@@ -167,6 +180,7 @@ namespace GL
          Lights li;
          li.lights = 0;
          li.light_ambient = lights.light_ambient;
+         li.viewport_size = lights.viewport_size;
          for (unsigned i = 0; i < max_lights; i++)
          {
             if (!light_enabled[i])
@@ -217,6 +231,7 @@ namespace GL
       lights_unibuf->bind(1);
    }
 
+   Program::Ptr Mesh::shader;
    UniformBuffer::Ptr Mesh::trans_unibuf;
    UniformBuffer::Ptr Mesh::lights_unibuf;
    Mesh::Transforms Mesh::transforms;

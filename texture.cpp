@@ -158,5 +158,66 @@ namespace GL
 
       return img;
    }
+
+   ShadowBuffer::ShadowBuffer(unsigned width, unsigned height)
+   {
+      GLSYM(glGenFramebuffers)(1, &fb_obj);
+      GLSYM(glGenTextures)(1, &depth_texture);
+
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
+      GLSYM(glTexImage2D)(GL_TEXTURE_2D,
+            0, GL_DEPTH_COMPONENT24,
+            width, height,
+            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
+
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
+
+      GLSYM(glFramebufferTexture2D)(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_TEXTURE_2D, depth_texture, 0);
+      glDrawBuffer(GL_NONE);
+
+      GLenum status;
+      if ((status = GLSYM(glCheckFramebufferStatus)(GL_FRAMEBUFFER)) !=
+            GL_FRAMEBUFFER_COMPLETE)
+      {
+         std::cerr << "Error: 0x" << std::hex << status << std::endl;
+         throw Exception("Framebuffer is not complete!");
+      }
+
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
+   }
+
+   ShadowBuffer::~ShadowBuffer()
+   {
+      GLSYM(glDeleteFramebuffers)(1, &fb_obj);
+      GLSYM(glDeleteTextures)(1, &depth_texture);
+   }
+
+   void ShadowBuffer::bind()
+   {
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
+   }
+
+   void ShadowBuffer::bind_texture()
+   {
+      GLSYM(glActiveTexture)(GL_TEXTURE1);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
+   }
+
+   void ShadowBuffer::unbind_texture()
+   {
+      GLSYM(glActiveTexture)(GL_TEXTURE1);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
+   }
+
+   void ShadowBuffer::unbind()
+   {
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
+   }
 }
 

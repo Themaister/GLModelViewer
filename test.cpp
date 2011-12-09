@@ -89,7 +89,7 @@ static GLMatrix update_camera(Camera &cam, float speed)
 
 static void gl_prog(const std::string &object_path)
 {
-   auto win = Window::get(200, 200, {3, 3});
+   auto win = Window::get(640, 480, {3, 3});
    win->vsync();
 
    Camera camera;
@@ -186,17 +186,20 @@ static void gl_prog(const std::string &object_path)
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
    prog->add(FileToString("shader.fp"), Shader::Type::Fragment);
    prog->link();
+   auto shadow_prog = Program::shared();
+   shadow_prog->add(FileToString("shadow_shader.vp"), Shader::Type::Vertex);
+   shadow_prog->link();
 
-   unsigned width = 200, height = 200;
+   ShadowBuffer shadow_buf(1024, 1024);
+
+   unsigned width = 640, height = 480;
    auto proj_matrix = Projection(2.0, 200.0);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.15, 0.15, 0.15});
-   Mesh::set_light(1, {-20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
-   Mesh::set_light(2, {20.0, -20.0, -5.0}, {1.0, 1.0, 1.0});
+   Mesh::set_shader(prog);
+   Mesh::set_viewport_size(640, 480);
 
    auto meshes = LoadTexturedMeshes(object_path);
-   for (auto mesh : meshes)
-      mesh->set_shader(prog);
 
    GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
@@ -205,34 +208,53 @@ static void gl_prog(const std::string &object_path)
       if (win->check_resize(width, height))
       {
          GLSYM(glViewport)(0, 0, width, height);
+         Mesh::set_viewport_size(width, height);
 
          auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
          Mesh::set_projection(proj_matrix);
       }
 
-      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      shadow_buf.bind();
+      GLSYM(glClear)(GL_DEPTH_BUFFER_BIT);
+      GLSYM(glViewport)(0, 0, 1024, 1024);
 
-      GLMatrix camera_matrix = update_camera(camera, 0.2);
-      Mesh::set_camera(camera_matrix);
-
+      auto camera_matrix = update_camera(camera, 0.2);
       auto light_pos = Translate(0.0, 0.0, -30.0) *
          Rotate(Rotation::Y, frame_count) *
-         vec4({30.0, 3.0, 0.0, 1.0});
+         vec4({80.0, 10.0, 0.0, 1.0});
+      auto light_direction = vec4({0.0, 0.0, -25.0, 0.0}) - light_pos;
       Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
 
+      auto light_camera = MapRotate(vec_conv<4, 3>(light_direction)) *
+            Translate(-light_pos(0), -light_pos(1), -light_pos(2));
+      Mesh::set_light_transform(light_camera);
+      Mesh::set_camera(light_camera);
+
+      // 1st pass. Render shadow map.
       scale *= scale_factor;
       for (auto mesh : meshes)
       {
-         //auto rotate_mat = Rotate(Rotation::Y, frame_count * 0.2);
-         auto rotate_mat = Rotate(Rotation::Y, 180);
+         auto rotate_mat = Identity();
          mesh->set_normal(rotate_mat);
 
          auto base_transform = Scale(scale) * rotate_mat;
          auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
          mesh->set_transform(trans_matrix);
          mesh->render();
-
       }
+      shadow_buf.unbind();
+
+      // 2nd pass. Render scene with shadows! :D
+      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GLSYM(glViewport)(0, 0, width, height);
+      shadow_buf.bind_texture();
+      Mesh::set_shader(prog);
+      Mesh::set_camera(camera_matrix);
+
+      for (auto mesh : meshes)
+         mesh->render();
+      shadow_buf.unbind_texture();
+
       frame_count += 1.0;
       win->flip();
    }

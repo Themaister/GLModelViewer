@@ -104,7 +104,7 @@ namespace GL
 
    bool Window::alive()
    {
-#if 0
+#if 1
       GLenum err = GLSYM(glGetError)();
       if (err != GL_NO_ERROR)
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));

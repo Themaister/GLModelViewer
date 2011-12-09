@@ -1,14 +1,15 @@
 #version 330 core
 
 layout(location = 0) in vec4 in_pos;
-layout(location = 1) in vec4 in_normal;
-layout(location = 2) in vec2 in_tex;
+layout(location = 1) in vec2 in_tex;
+layout(location = 2) in vec4 in_normal;
 
 layout(row_major) uniform;
 layout(std140) uniform Transforms
 {
    mat4 projection_matrix;
    mat4 camera_matrix;
+   mat4 light_matrix;
 };
 uniform mat4 trans_matrix;
 uniform mat4 normal_matrix;
@@ -16,10 +17,13 @@ uniform mat4 normal_matrix;
 out vec3 normal;
 out vec3 model_vector;
 out vec2 tex_coord;
+out float shadow_z;
 
 void main()
 {
    vec4 world_vector = trans_matrix * in_pos;
+   shadow_z = 0.5 * ((projection_matrix * light_matrix * world_vector).z + 1.0);
+
    vec4 camera_vector = camera_matrix * world_vector;
    gl_Position = projection_matrix * camera_vector;
 

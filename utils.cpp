@@ -125,5 +125,19 @@ namespace GLU
                ret(j, i) = mat(i, j);
          return ret;
       }
+
+      GL::vec3 Normalize(const GL::vec3 &dir)
+      {
+         float factor = 1.0 / std::sqrt(dir(0) * dir(0) + dir(1) * dir(1) + dir(2) * dir(2));
+         return factor * dir;
+      }
+
+      GL::GLMatrix MapRotate(const GL::vec3 &dir)
+      {
+         //auto norm_dir = vec_conv<3, 4>(Normalize(dir));
+         //norm_dir(3) = 1.0;
+
+         return Identity();
+      }
    }
 }

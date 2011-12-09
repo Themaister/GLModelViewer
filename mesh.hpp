@@ -19,11 +19,13 @@ namespace GL
          Mesh(const std::string &obj);
          Mesh(const std::vector<Geo::Triangle> &triangles);
          virtual void render();
-         void set_shader(Program::Ptr shader);
+         static void set_shader(Program::Ptr shader);
 
          static void set_projection(const GLMatrix &matrix);
          static void set_camera(const GLMatrix &matrix);
 
+         static void set_viewport_size(unsigned width, unsigned height);
+         static void set_light_transform(const GLMatrix &matrix);
          void set_transform(const GLMatrix &matrix);
          void set_normal(const GLMatrix &matrix);
          void set_texture(Texture::Ptr tex);
@@ -38,7 +40,7 @@ namespace GL
          Buffer vbo;
          VAO vao;
 
-         Program::Ptr shader;
+         static Program::Ptr shader;
          Texture::Ptr tex;
 
          static UniformBuffer::Ptr trans_unibuf;
@@ -47,6 +49,7 @@ namespace GL
          {
             GLMatrix projection;
             GLMatrix camera;
+            GLMatrix light_matrix;
          } static transforms;
          GLMatrix trans_matrix;
          GLMatrix normal_matrix;
@@ -59,8 +62,9 @@ namespace GL
             vec4 light_ambient;
             vec4 light_pos[max_lights];
             vec4 light_color[max_lights];
+            Vector<GLint, 2> viewport_size;
             GLint lights;
-            GLint padding[3];
+            GLint padding;
          } static lights;
          static bool lights_changed;
          void init_uniform_buffers();
