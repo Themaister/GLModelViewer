@@ -161,6 +161,7 @@ namespace GL
    }
 
    ShadowBuffer::ShadowBuffer(unsigned width, unsigned height)
+      : width(width), height(height)
    {
       GLSYM(glGenFramebuffers)(1, &fb_obj);
       GLSYM(glGenTextures)(1, &depth_texture);
@@ -204,21 +205,29 @@ namespace GL
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
    }
 
-   void ShadowBuffer::bind_texture()
+   void ShadowBuffer::bind_texture(unsigned index)
    {
-      GLSYM(glActiveTexture)(GL_TEXTURE1);
+      GLSYM(glActiveTexture)(GL_TEXTURE0 + index);
       GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
+      bound_index = index;
    }
 
    void ShadowBuffer::unbind_texture()
    {
-      GLSYM(glActiveTexture)(GL_TEXTURE1);
+      GLSYM(glActiveTexture)(GL_TEXTURE0 + bound_index);
       GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
+      bound_index = 0;
    }
 
    void ShadowBuffer::unbind()
    {
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
+   }
+
+   void ShadowBuffer::size(unsigned &width, unsigned &height) const
+   {
+      width = this->width;
+      height = this->height;
    }
 }
 

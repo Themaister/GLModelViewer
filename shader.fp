@@ -51,6 +51,10 @@ void main()
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 20.0, 5.0);
 
-   float nearest_z = texture2D(shadow_texture, shadow.xy).z + 0.001;
-   out_color = vec4(tex.rgb * (light_ambient + result * (shadow.z <= nearest_z ? 1.0 : 0.0)), tex.a);
+   float nearest_z0 = texture2D(shadow_texture, shadow.xy).z + 0.0003;
+   float shadow_factor = 0.0;
+   shadow_factor += shadow.z <= nearest_z0 ? 1.0 : 0.0;
+
+   // If we match the lowest Z value, we are being lit.
+   out_color = vec4(tex.rgb * (light_ambient + result * shadow_factor), tex.a);
 }

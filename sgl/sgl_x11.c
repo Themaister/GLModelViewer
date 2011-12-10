@@ -327,6 +327,9 @@ int sgl_init(const struct sgl_context_options *opts)
          GLX_CONTEXT_MAJOR_VERSION_ARB, opts->context.major,
          GLX_CONTEXT_MINOR_VERSION_ARB, opts->context.minor,
          GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+#if 0
+         GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+#endif
          None,
       };
 

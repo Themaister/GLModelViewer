@@ -49,14 +49,17 @@ namespace GL
          ShadowBuffer(unsigned width, unsigned height);
          ~ShadowBuffer();
 
+         void size(unsigned &width, unsigned &height) const;
          void bind();
          void unbind();
-         void bind_texture();
+         void bind_texture(unsigned index);
          void unbind_texture();
 
       private:
          GLuint fb_obj;
          GLuint depth_texture;
+         unsigned bound_index;
+         unsigned width, height;
    };
 }
 

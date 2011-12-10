@@ -200,11 +200,6 @@ static void gl_prog(const std::string &object_path)
 
    auto meshes = LoadTexturedMeshes(object_path);
 
-   vec3 light_pos {0, 3, 0};
-   Mesh::set_light(0, light_pos, {4.0, 4.0, 4.0});
-   auto light_camera = Translate(-light_pos(0), -light_pos(1), -light_pos(2));
-   Mesh::set_light_transform(light_camera);
-
    GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
    while (win->alive() && !quit)
@@ -214,11 +209,21 @@ static void gl_prog(const std::string &object_path)
          GLSYM(glViewport)(0, 0, width, height);
          auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
          Mesh::set_projection(proj_matrix);
+         frame_count = 0.0;
       }
+
+      vec4 light_pos = vec4({10, 30, 30, 1});
+      Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
+      vec3 light_distance = vec3({0, 0, -25}) - vec_conv<4, 3>(light_pos);
+      auto light_camera = Derotate(light_distance) * Translate(-light_pos(0), -light_pos(1), -light_pos(2));
+      Mesh::set_light_transform(light_camera);
 
       shadow_buf.bind();
       GLSYM(glClear)(GL_DEPTH_BUFFER_BIT);
-      GLSYM(glViewport)(0, 0, 1024, 1024);
+
+      unsigned shadow_w, shadow_h;
+      shadow_buf.size(shadow_w, shadow_h);
+      GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
 
       auto camera_matrix = update_camera(camera, 0.2);
       Mesh::set_camera(light_camera);
@@ -240,7 +245,7 @@ static void gl_prog(const std::string &object_path)
       // 2nd pass. Render scene with shadows! :D
       GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       GLSYM(glViewport)(0, 0, width, height);
-      shadow_buf.bind_texture();
+      shadow_buf.bind_texture(1);
       Mesh::set_shader(prog);
       Mesh::set_camera(camera_matrix);
 
