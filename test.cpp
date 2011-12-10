@@ -190,7 +190,7 @@ static void gl_prog(const std::string &object_path)
    shadow_prog->add(FileToString("shadow_shader.vp"), Shader::Type::Vertex);
    shadow_prog->link();
 
-   ShadowBuffer shadow_buf(1024, 1024);
+   ShadowBuffer shadow_buf(2048, 2048);
 
    unsigned width = 640, height = 480;
    auto proj_matrix = Projection(2.0, 200.0);
@@ -212,7 +212,9 @@ static void gl_prog(const std::string &object_path)
          frame_count = 0.0;
       }
 
-      vec4 light_pos = vec4({10, 30, 30, 1});
+      auto camera_matrix = update_camera(camera, 0.2);
+
+      vec4 light_pos = vec4({0, 0, 0, 1});
       Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
       vec3 light_distance = vec3({0, 0, -25}) - vec_conv<4, 3>(light_pos);
       auto light_camera = Derotate(light_distance) * Translate(-light_pos(0), -light_pos(1), -light_pos(2));
@@ -225,7 +227,6 @@ static void gl_prog(const std::string &object_path)
       shadow_buf.size(shadow_w, shadow_h);
       GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
 
-      auto camera_matrix = update_camera(camera, 0.2);
       Mesh::set_camera(light_camera);
 
       // 1st pass. Render shadow map.
