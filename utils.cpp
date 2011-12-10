@@ -134,17 +134,18 @@ namespace GLU
 
       GL::GLMatrix Derotate(const GL::vec3 &dir)
       {
-         auto norm_dir = GL::vec_conv<3, 4>(Normalize(dir));
+         auto norm_dir = Normalize(dir);
 
          float x = norm_dir(0);
          float y = norm_dir(1);
          float z = norm_dir(2);
 
          float y_rot;
+	 // Need to rotate y in reverse due to Z flipping sign in projection.
          if (x > 0.0)
-            y_rot = std::acos(-z) * 180 / M_PI;
-         else
             y_rot = -std::acos(-z) * 180 / M_PI;
+         else
+            y_rot = std::acos(-z) * 180 / M_PI;
 
          float x_rot = std::asin(-y) * 180 / M_PI;
 

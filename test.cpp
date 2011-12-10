@@ -137,7 +137,7 @@ static void gl_prog(const std::string &object_path)
 
             case SGLK_v:
                sgl_set_mouse_mode(false, true, true);
-               camera.mouse = true;
+               camera.mouse = false;
                break;
 
             case SGLK_m:
@@ -214,7 +214,7 @@ static void gl_prog(const std::string &object_path)
 
       auto camera_matrix = update_camera(camera, 0.2);
 
-      vec4 light_pos = vec4({0, 0, 0, 1});
+      vec4 light_pos = vec4({20, -10, 0, 1});
       Mesh::set_light(0, vec_conv<4, 3>(light_pos), {4.0, 4.0, 4.0});
       vec3 light_distance = vec3({0, 0, -25}) - vec_conv<4, 3>(light_pos);
       auto light_camera = Derotate(light_distance) * Translate(-light_pos(0), -light_pos(1), -light_pos(2));
