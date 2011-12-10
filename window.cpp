@@ -88,8 +88,7 @@ namespace GL
 #undef _D
 
       for (auto &bind : bind_map)
-         symbol_map[bind.first] = bind.second;
-      symbol_map.grant(get());
+         sym_map[bind.first] = bind.second;
    }
 
    void Window::vsync(bool activate)
@@ -111,6 +110,11 @@ namespace GL
 #endif
 
       return sgl_is_alive();
+   }
+
+   sgl_function_t& Window::symbol(const std::string &str)
+   {
+      return sym_map[str];
    }
 
    void Window::set_key_cb(const std::function<void (int, bool)>& cb)
@@ -136,7 +140,5 @@ namespace GL
       if (win && win->mouse_move_cb)
          win->mouse_move_cb(x, y);
    }
-
-   SymbolTable symbol_map;
 }
 

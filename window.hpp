@@ -15,6 +15,8 @@ namespace GL
       void sgl_mouse_move_cb(int, int);
    }
 
+   class SymbolTable;
+
    class Window : private GLU::SmartDefs<Window>
    {
       public:
@@ -32,6 +34,8 @@ namespace GL
          void set_key_cb(const std::function<void (int, bool)>& cb);
          void set_mouse_move_cb(const std::function<void (int, int)>& cb);
 
+         sgl_function_t& symbol(const std::string &sym);
+
          ~Window();
 
       private:
@@ -45,6 +49,8 @@ namespace GL
 
          void set_callbacks();
          void set_symbols();
+
+         std::map<std::string, sgl_function_t> sym_map;
    };
 
    // Every global resource that manages GL state must hold a reference
@@ -52,34 +58,14 @@ namespace GL
    class GLResource
    {
       public:
-         GLResource(bool init = true)
+         GLResource()
          {
-            if (init)
-               win_hold = GL::Window::get();
+            win_hold = GL::Window::get();
          }
-
-         void grant(Window::Ptr ptr) { win_hold = ptr; }
 
       private:
          Window::Ptr win_hold;
    };
-
-   class SymbolTable : public GLResource
-   {
-      public:
-         SymbolTable() : GLResource(false)
-         {}
-
-         sgl_function_t& operator[](const std::string &str)
-         {
-            return syms[str];
-         }
-
-      private:
-         std::map<std::string, sgl_function_t> syms;
-   };
-
-   extern SymbolTable symbol_map;
 }
 
 #endif

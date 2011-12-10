@@ -36,7 +36,7 @@ namespace GL
    template <class Func, class T>
    inline Func sym_to_func(const T &gl_sym)
    {
-      auto &map = symbol_map[gl_sym];
+      auto &map = Window::get()->symbol(gl_sym);
 
       sgl_function_t symbol = map;
       if (!symbol)

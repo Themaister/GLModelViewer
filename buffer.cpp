@@ -43,7 +43,7 @@ namespace GL
       GLSYM(glBindBuffer)(type, 0);
    }
 
-   UniformBuffer::UniformBuffer() : bound_target(0), win_hold(Window::get())
+   UniformBuffer::UniformBuffer() : bound_target(0)
    {
       GLSYM(glGenBuffers)(1, &obj);
    }

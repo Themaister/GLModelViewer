@@ -59,7 +59,6 @@ namespace GL
       private:
          GLuint obj;
          unsigned bound_target;
-         Window::Ptr win_hold;
    };
 }
 
