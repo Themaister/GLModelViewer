@@ -193,7 +193,7 @@ static void gl_prog(const std::string &object_path)
    ShadowBuffer shadow_buf(2048, 2048);
 
    unsigned width = 640, height = 480;
-   auto proj_matrix = Projection(2.0, 200.0);
+   auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_shader(prog);
