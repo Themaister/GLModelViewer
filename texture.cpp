@@ -168,7 +168,7 @@ namespace GL
 
       GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
       GLSYM(glTexImage2D)(GL_TEXTURE_2D,
-            0, GL_DEPTH_COMPONENT24,
+            0, GL_DEPTH_COMPONENT32,
             width, height,
             0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
