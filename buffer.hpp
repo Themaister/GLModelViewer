@@ -52,8 +52,7 @@ namespace GL
          void bind(unsigned index);
          static void unbind();
 
-         void bind_block(Program::Ptr prog, unsigned block_index);
-
+         void bind_block(Program::Ptr prog, GLuint block_index);
          void operator=(const UniformBuffer&) = delete;
 
       private:

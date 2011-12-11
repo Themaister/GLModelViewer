@@ -82,7 +82,6 @@ static GLMatrix update_camera(Camera &cam, float speed)
       direction += speed * vec3({0, -1, 0});
 
    cam.pos = cam.pos + direction;
-   std::cerr << "Camera => " << std::endl << cam.pos << std::endl;
 
    auto translation = Translate(-cam.pos);
    return Rotate(Rotation::X, -cam.rot_x) * Transpose(rotation) * translation;
@@ -178,7 +177,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          camera.delta = { x, y };
       });
 
-   float scale = 1.0;
+   float scale = 20.0;
    float scale_factor = 1.0;
    bool quit = false;
 
@@ -187,7 +186,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
       });
 
    GLSYM(glEnable)(GL_DEPTH_TEST);
-   GLSYM(glEnable)(GL_CULL_FACE);
+   //GLSYM(glEnable)(GL_CULL_FACE);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -224,9 +223,9 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          frame_count = 0.0;
       }
 
-      vec3 light_pos = Translate(0, 15 * std::sin(frame_count * 0.1), 15 * std::cos(frame_count * 0.1)) * vec4({-131.88, 64.53, 33.76, 1.0});
-      Mesh::set_light(0, light_pos, {0, 20, 0});
-      auto light_camera = Projection(1, 1000) * Derotate(vec3({122.52, 9.83, -79.51}) - light_pos) * Translate(-light_pos);
+      vec3 light_pos {0, 300, -25};
+      Mesh::set_light(0, light_pos, {10, 4, 4});
+      auto light_camera = Projection(1, 1000) * Derotate(vec3({0, -1, 0}) - light_pos) * Translate(-light_pos);
       Mesh::set_light_transform(light_camera);
 
       auto camera_matrix = update_camera(camera, 1.0);

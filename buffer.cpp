@@ -69,9 +69,10 @@ namespace GL
       bound_target = index;
    }
 
-   void UniformBuffer::bind_block(Program::Ptr prog, unsigned block_index)
+   void UniformBuffer::bind_block(Program::Ptr prog, GLuint block_index)
    {
-      prog->uniform_block_binding(block_index, bound_target);
+      if (block_index != GL_INVALID_INDEX)
+         prog->uniform_block_binding(block_index, bound_target);
    }
 }
 
