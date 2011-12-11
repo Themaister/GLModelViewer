@@ -29,7 +29,6 @@ namespace GL
 
    Window::~Window()
    {
-      std::cerr << "[SGL]: Tearing down SGL!" << std::endl;
       sgl_deinit();
    }
 

@@ -163,7 +163,7 @@ static void key_callback(unsigned key, bool pressed,
    }
 }
 
-static void gl_prog(const std::string &object_path)
+static void gl_prog(const std::vector<std::string> &object_paths)
 {
    auto win = Window::get(640, 480, {3, 3});
    win->vsync();
@@ -204,7 +204,12 @@ static void gl_prog(const std::string &object_path)
    Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_shader(prog);
 
-   auto meshes = LoadTexturedMeshes(object_path);
+   std::vector<Mesh::Ptr> meshes;
+   for (auto &path : object_paths)
+   {
+      auto mesh = LoadTexturedMeshes(path);
+      meshes.insert(meshes.end(), mesh.begin(), mesh.end());
+   }
 
    GLSYM(glClearColor)(0, 0, 0, 1);
    float frame_count = 0.0;
@@ -266,15 +271,19 @@ static void gl_prog(const std::string &object_path)
 
 int main(int argc, char *argv[])
 {
-   if (argc != 2)
+   if (argc < 2)
    {
-      std::cerr << "Usage: " << argv[0] << " <Object>" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " <Object> [<Objects>]" << std::endl;
       return 1;
    }
 
    try
    {
-      gl_prog(argv[1]);
+      std::vector<std::string> paths;
+      for (int i = 1; i < argc; i++)
+         paths.push_back(argv[i]);
+
+      gl_prog(paths);
    }
    catch (const Exception& e)
    {

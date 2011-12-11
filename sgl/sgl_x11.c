@@ -312,7 +312,6 @@ int sgl_init(const struct sgl_context_options *opts)
    // Create context.
    if (opts->context.style == SGL_CONTEXT_MODERN)
    {
-      fprintf(stderr, "[SGL]: Creating modern OpenGL %u.%u context!\n", opts->context.major, opts->context.minor);
       typedef GLXContext (*ContextProc)(Display*, GLXFBConfig,
             GLXContext, Bool, const int *);
 
@@ -336,10 +335,7 @@ int sgl_init(const struct sgl_context_options *opts)
       g_ctx = proc(g_dpy, fbc, 0, true, attribs);
    }
    else
-   {
-      fprintf(stderr, "[SGL]: Creating legacy OpenGL context!\n");
       g_ctx = glXCreateNewContext(g_dpy, fbc, GLX_RGBA_TYPE, 0, True);
-   }
    
    glXMakeCurrent(g_dpy, g_win, g_ctx);
    XSync(g_dpy, False);
