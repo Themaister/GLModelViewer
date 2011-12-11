@@ -32,7 +32,7 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
    // Specular
    vec3 eye_vec = normalize(-model_vector);
    vec3 reflected = reflect(light_direction, normal);
-   vec3 specular = smoothstep(0.0, 1.0, pow(dot(eye_vec, reflected), 2.0)) * color * distance_correction;
+   vec3 specular = colorconv(specular_coeff * pow(dot(eye_vec, reflected), 2.0) * color * distance_correction);
 
    // Diffuse
    vec3 diffuse = colorconv(diffuse_coeff * dot(normal, -light_direction) * color * distance_correction);
@@ -64,7 +64,7 @@ void main()
    int count = min(MAX_LIGHTS, lights_count);
    
    for (int i = 0; i < count; i++)
-      result += apply_light(lights_pos[i], lights_color[i], 20.0, 15.0);
+      result += apply_light(lights_pos[i], lights_color[i], 10.0, 10.0);
 
    float shadow_factor = 0.0;
    LOOKUP(0); LOOKUP(1); LOOKUP(2); LOOKUP(3);

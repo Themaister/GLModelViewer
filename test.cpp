@@ -196,7 +196,7 @@ static void gl_prog(const std::string &object_path)
    shadow_prog->add(FileToString("shadow_shader.vp"), Shader::Type::Vertex);
    shadow_prog->link();
 
-   ShadowBuffer shadow_buf(1024, 1024);
+   ShadowBuffer shadow_buf(2048, 2048);
 
    unsigned width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
@@ -242,8 +242,7 @@ static void gl_prog(const std::string &object_path)
          auto rotate_mat = Identity();
          mesh->set_normal(rotate_mat);
 
-         auto base_transform = Scale(scale);
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * base_transform;
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale) * Translate(-2.8, -2, 2.8);
          mesh->set_transform(trans_matrix);
          mesh->render();
       }
