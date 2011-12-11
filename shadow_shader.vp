@@ -12,12 +12,9 @@ layout(std140) uniform Transforms
    mat4 light_matrix;
 };
 uniform mat4 trans_matrix;
-uniform mat4 normal_matrix;
 
 void main()
 {
-   vec4 world_vector = trans_matrix * in_pos;
-   vec4 camera_vector = camera_matrix * world_vector;
-   gl_Position = projection_matrix * camera_vector;
+   gl_Position = light_matrix * trans_matrix * in_pos;
 }
 

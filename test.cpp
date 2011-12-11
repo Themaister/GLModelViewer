@@ -82,6 +82,7 @@ static GLMatrix update_camera(Camera &cam, float speed)
       direction += speed * vec3({0, -1, 0});
 
    cam.pos = cam.pos + direction;
+   std::cerr << "Camera => " << std::endl << cam.pos << std::endl;
 
    auto translation = Translate(-cam.pos);
    return Rotate(Rotation::X, -cam.rot_x) * Transpose(rotation) * translation;
@@ -199,7 +200,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    ShadowBuffer shadow_buf(2048, 2048);
 
    unsigned width = 640, height = 480;
-   auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
+   auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_shader(prog);
@@ -218,27 +219,25 @@ static void gl_prog(const std::vector<std::string> &object_paths)
       if (win->check_resize(width, height))
       {
          GLSYM(glViewport)(0, 0, width, height);
-         auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2.0, 200.0);
+         auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
          Mesh::set_projection(proj_matrix);
          frame_count = 0.0;
       }
 
-      auto camera_matrix = update_camera(camera, 0.2);
-
-      vec3 light_pos = Translate(0, 30, -25.0) * Rotate(Rotation::Y, frame_count) * vec4({80, 0, 0, 1});
-      Mesh::set_light(0, light_pos, {4.0, 4.0, 4.0});
-      vec3 light_distance = vec3({0, 0, -25}) - light_pos;
-      auto light_camera = Derotate(light_distance) * Translate(-light_pos);
+      vec3 light_pos = Translate(0, 15 * std::sin(frame_count * 0.1), 15 * std::cos(frame_count * 0.1)) * vec4({-131.88, 64.53, 33.76, 1.0});
+      Mesh::set_light(0, light_pos, {0, 20, 0});
+      auto light_camera = Projection(1, 1000) * Derotate(vec3({122.52, 9.83, -79.51}) - light_pos) * Translate(-light_pos);
       Mesh::set_light_transform(light_camera);
 
+      auto camera_matrix = update_camera(camera, 1.0);
+
+      Mesh::set_shader(shadow_prog);
       shadow_buf.bind();
       GLSYM(glClear)(GL_DEPTH_BUFFER_BIT);
 
       unsigned shadow_w, shadow_h;
       shadow_buf.size(shadow_w, shadow_h);
       GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
-
-      Mesh::set_camera(light_camera);
 
       // 1st pass. Render shadow map.
       scale *= scale_factor;
@@ -247,7 +246,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          auto rotate_mat = Identity();
          mesh->set_normal(rotate_mat);
 
-         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale) * Translate(-2.8, -2, 2.8);
+         auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale);
          mesh->set_transform(trans_matrix);
          mesh->render();
       }

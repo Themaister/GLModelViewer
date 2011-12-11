@@ -53,7 +53,6 @@ namespace GL
          GLMatrix trans_matrix;
          GLMatrix normal_matrix;
          static bool transforms_changed;
-         bool local_transforms_changed;
          enum { max_lights = 8 };
          static std::array<bool, max_lights> light_enabled;
          struct Lights

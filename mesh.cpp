@@ -7,14 +7,14 @@
 namespace GL
 {
    Mesh::Mesh(const std::string &obj) : 
-      num_vertices(0), vbo(GL_ARRAY_BUFFER), local_transforms_changed(false)
+      num_vertices(0), vbo(GL_ARRAY_BUFFER)
    {
       load_object(obj);
       init_uniform_buffers();
    }
 
    Mesh::Mesh(const std::vector<Geo::Triangle> &triangles) :
-      num_vertices(0), vbo(GL_ARRAY_BUFFER), local_transforms_changed(false)
+      num_vertices(0), vbo(GL_ARRAY_BUFFER)
    {
       load_object(triangles);
       init_uniform_buffers();
@@ -78,13 +78,11 @@ namespace GL
 
    void Mesh::set_transform(const GLMatrix &matrix)
    {
-      local_transforms_changed = true;
       trans_matrix = matrix;
    }
 
    void Mesh::set_normal(const GLMatrix &matrix)
    {
-      local_transforms_changed = true;
       normal_matrix = matrix;
    }
 
@@ -155,14 +153,10 @@ namespace GL
          transforms_changed = false;
       }
 
-      if (local_transforms_changed)
-      {
-         GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
-               GL_FALSE, trans_matrix());
-         GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
-               GL_FALSE, normal_matrix());
-         local_transforms_changed = false;
-      }
+      GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
+            GL_FALSE, trans_matrix());
+      GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
+            GL_FALSE, normal_matrix());
 
       trans_unibuf->bind_block(shader, shader->uniform_block_index("Transforms"));
    }

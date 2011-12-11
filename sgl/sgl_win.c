@@ -119,7 +119,7 @@ static void create_gl_context(HWND hwnd)
       g_hrc = new_ctx;
    }
 
-   int ver_major, ver_minor;
+   int ver_major = 0, ver_minor = 0;
    glGetIntegerv(GL_MAJOR_VERSION, &ver_major);
    glGetIntegerv(GL_MINOR_VERSION, &ver_minor);
    fprintf(stderr, "[SGL]: Got OpenGL version: %u.%u\n", ver_major, ver_minor);

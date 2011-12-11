@@ -135,6 +135,25 @@ namespace GLU
 
          return stream;
       }
+
+      // For debugging :D
+      template <class T, unsigned N>
+      std::ostream& operator<<(std::ostream &stream, const GL::Vector<T, N> &vec)
+      {
+         stream << "================================" << std::endl;
+         for (unsigned i = 0; i < N; i++)
+         {
+            stream << std::setw(6) <<
+               std::fixed << std::setprecision(2) <<
+               vec(i) << " ";
+         }
+
+         stream << std::endl;
+         stream << "================================" << std::endl;
+
+         return stream;
+      }
+
    }
 }
 
