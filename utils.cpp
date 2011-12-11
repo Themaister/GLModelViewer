@@ -73,6 +73,11 @@ namespace GLU
          return mat;
       }
 
+      GL::GLMatrix Translate(const GL::vec3 &dir)
+      {
+         return Translate(dir(0), dir(1), dir(2));
+      }
+
       GL::GLMatrix Rotate(Rotation dir, GLfloat degrees)
       {
          GL::GLMatrix matrix;
@@ -141,7 +146,7 @@ namespace GLU
          float z = norm_dir(2);
 
          float y_rot;
-	 // Need to rotate y in reverse due to Z flipping sign in projection.
+         // Need to rotate y in reverse due to Z flipping sign in projection.
          if (x > 0.0)
             y_rot = -std::acos(-z) * 180 / M_PI;
          else

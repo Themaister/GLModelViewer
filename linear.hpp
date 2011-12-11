@@ -9,6 +9,11 @@ namespace GL
 {
    class Exception;
 
+   template <class T, unsigned N>
+   class Vector;
+   template <unsigned M, unsigned N, class T>
+   Vector<T, N> vec_conv(const Vector<T, M> &in);
+
    template <class T, unsigned N = 4>
    class Vector
    {
@@ -54,6 +59,12 @@ namespace GL
          Vector(const Vector<T, N> &in)
          {
             *this = in;
+         }
+
+         template <unsigned M>
+         Vector(const Vector<T, M> &in)
+         {
+            *this = vec_conv<M, N>(in);
          }
 
          Vector<T, N> operator+(const Vector<T, N> &in) const
@@ -250,16 +261,31 @@ namespace GL
    }
 
    template <class T, unsigned N>
+   Vector<T, N> operator-(const Vector<T, N> &in)
+   {
+      Vector<T, N> ret;
+      for (unsigned i = 0; i < N; i++)
+         ret(i) = -in(i);
+      return ret;
+   }
+
+   template <class T>
+   Matrix<T> operator-(const Matrix<T> &in)
+   {
+      Matrix<T> out;
+      for (unsigned i = 0; i < 4; i++)
+         for (unsigned j = 0; j < 4; j++)
+            out(i, j) = -in(i, j);
+      return out;
+   }
+
+   template <class T, unsigned N>
    Matrix<T> operator*(T scale, const Matrix<T> &in)
    {
       Matrix<T> out;
       for (unsigned i = 0; i < 4; i++)
-      {
          for (unsigned j = 0; j < 4; j++)
-         {
             out(i, j) = scale * in(i, j);
-         }
-      }
       return out;
    }
 

@@ -103,6 +103,7 @@ namespace GLU
       GL::GLMatrix Scale(GLfloat x, GLfloat y, GLfloat z);
       GL::GLMatrix Scale(GLfloat scale);
       GL::GLMatrix Translate(GLfloat x, GLfloat y, GLfloat z);
+      GL::GLMatrix Translate(const GL::vec3 &vec);
 
       enum class Rotation
       {
