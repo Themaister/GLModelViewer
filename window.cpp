@@ -3,6 +3,7 @@
 
 namespace GL
 {
+#if 0
    extern "C"
    {
       static void debug_cb(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *message, GLvoid*)
@@ -10,6 +11,7 @@ namespace GL
          std::cerr << "GL DEBUG: " << message << std::endl;
       }
    }
+#endif
 
    Window::Window(unsigned width, unsigned height, 
          const std::pair<unsigned, unsigned> &gl_version, bool fullscreen)
