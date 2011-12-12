@@ -104,11 +104,15 @@ static void create_gl_context(HWND hwnd)
 #define WGL_CONTEXT_FLAGS_ARB                   0x2094
 #define WGL_CONTEXT_PROFILE_MASK_ARB            0x9126
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB        0x0001
+#define WGL_CONTEXT_DEBUG_BIT_ARB               0x0001
 
       const int attribs[] = {
          WGL_CONTEXT_MAJOR_VERSION_ARB, g_gl_major,
          WGL_CONTEXT_MINOR_VERSION_ARB, g_gl_minor,
          WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+#if 1
+         WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB,
+#endif
          0
       };
 
