@@ -52,7 +52,7 @@ namespace GL
                   gl_version, fullscreen));
       }
 
-#if 1
+#if 0
       GLSYM(glDebugMessageControlARB)(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
       GLSYM(glDebugMessageCallbackARB)(debug_cb, nullptr);
 #endif
@@ -94,7 +94,7 @@ namespace GL
             _D(glClear),
             _D(glTexParameteri),
             _D(glDeleteTextures),
-#if 1
+#if 0
             _D(glGetError),
 #endif
          };
@@ -116,7 +116,7 @@ namespace GL
 
    bool Window::alive()
    {
-#if 1
+#if 0
       GLenum err = GLSYM(glGetError)();
       if (err != GL_NO_ERROR)
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));
