@@ -3,6 +3,14 @@
 
 namespace GL
 {
+   extern "C"
+   {
+      static void debug_cb(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *message, GLvoid*)
+      {
+         std::cerr << "GL DEBUG: " << message << std::endl;
+      }
+   }
+
    Window::Window(unsigned width, unsigned height, 
          const std::pair<unsigned, unsigned> &gl_version, bool fullscreen)
    {
@@ -25,6 +33,7 @@ namespace GL
 
       set_callbacks();
       set_symbols();
+
    }
 
    Window::~Window()
@@ -42,6 +51,11 @@ namespace GL
          m_ptr = Window::Ptr(new Window(width, height,
                   gl_version, fullscreen));
       }
+
+#if 1
+      GLSYM(glDebugMessageControlARB)(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+      GLSYM(glDebugMessageCallbackARB)(debug_cb, nullptr);
+#endif
 
       return m_ptr;
    }
@@ -80,7 +94,7 @@ namespace GL
             _D(glClear),
             _D(glTexParameteri),
             _D(glDeleteTextures),
-#if 0
+#if 1
             _D(glGetError),
 #endif
          };
@@ -102,7 +116,7 @@ namespace GL
 
    bool Window::alive()
    {
-#if 0
+#if 1
       GLenum err = GLSYM(glGetError)();
       if (err != GL_NO_ERROR)
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));
