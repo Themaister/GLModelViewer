@@ -93,10 +93,10 @@ namespace GL
       if (status != GL_TRUE)
          throw ShaderException(program);
 
-      GLSYM(glValidateProgram)(program);
-      GLSYM(glGetProgramiv)(program, GL_VALIDATE_STATUS, &status);
-      if (status != GL_TRUE)
-         throw ShaderException(program);
+      //GLSYM(glValidateProgram)(program);
+      //GLSYM(glGetProgramiv)(program, GL_VALIDATE_STATUS, &status);
+      //if (status != GL_TRUE)
+      //   throw ShaderException(program);
 
       m_linked = true;
    }

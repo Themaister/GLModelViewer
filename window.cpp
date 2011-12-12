@@ -96,6 +96,9 @@ namespace GL
             _D(glClear),
             _D(glTexParameteri),
             _D(glDeleteTextures),
+            _D(glGenTextures),
+            _D(glBindTexture),
+            _D(glDrawArrays),
 #if 0
             _D(glGetError),
 #endif
