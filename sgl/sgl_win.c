@@ -90,7 +90,6 @@ static void create_gl_context(HWND hwnd)
    // Take it to the limit! :D
    if (g_ctx_modern)
    {
-      fprintf(stderr, "[SGL]: Creating modern OpenGL %u.%u context!\n", g_gl_major, g_gl_minor);
       typedef HGLRC (*ContextProc)(HDC, HGLRC, const int *);
       ContextProc proc = (ContextProc)sgl_get_proc_address("wglCreateContextAttribsARB");
       if (!proc)
@@ -122,11 +121,6 @@ static void create_gl_context(HWND hwnd)
       wglMakeCurrent(g_hdc, new_ctx);
       g_hrc = new_ctx;
    }
-
-   int ver_major = 0, ver_minor = 0;
-   glGetIntegerv(GL_MAJOR_VERSION, &ver_major);
-   glGetIntegerv(GL_MINOR_VERSION, &ver_minor);
-   fprintf(stderr, "[SGL]: Got OpenGL version: %u.%u\n", ver_major, ver_minor);
 }
 
 static void handle_key_press(int key, int pressed);
