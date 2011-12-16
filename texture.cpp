@@ -87,7 +87,7 @@ namespace GL
       GLSYM(glBindTexture)(GL_TEXTURE_2D, obj);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_edge(edge));
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_edge(edge));
-      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter(filter));
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    }
 

@@ -3,7 +3,7 @@
 
 namespace GL
 {
-#if 0
+#ifdef DEBUG
    extern "C"
    {
       static void debug_cb(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *message, GLvoid*)
@@ -54,7 +54,7 @@ namespace GL
                   gl_version, fullscreen));
       }
 
-#if 0
+#ifdef DEBUG
       GLSYM(glDebugMessageControlARB)(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
       GLSYM(glDebugMessageCallbackARB)(debug_cb, nullptr);
 #endif
@@ -99,7 +99,7 @@ namespace GL
             _D(glGenTextures),
             _D(glBindTexture),
             _D(glDrawArrays),
-#if 0
+#ifdef DEBUG
             _D(glGetError),
 #endif
          };
@@ -121,7 +121,7 @@ namespace GL
 
    bool Window::alive()
    {
-#if 0
+#ifdef DEBUG
       GLenum err = GLSYM(glGetError)();
       if (err != GL_NO_ERROR)
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));

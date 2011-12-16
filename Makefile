@@ -38,6 +38,11 @@ else
    CFLAGS += -O2
 endif
 
+ifeq ($(DEBUG), 1)
+   CFLAGS += -DDEBUG
+   CXXFLAGS += -DDEBUG
+endif
+
 CXXSOURCES := $(wildcard *.cpp)
 CSOURCES := sgl/sgl.o
 OBJ := $(CXXSOURCES:.cpp=.o) $(CSOURCES:.c=.o)
