@@ -42,8 +42,6 @@ namespace GL
          static Program::Ptr shader;
          Texture::Ptr tex;
 
-         static UniformBuffer::Ptr trans_unibuf;
-         static UniformBuffer::Ptr lights_unibuf;
          struct Transforms
          {
             GLMatrix projection;
@@ -52,7 +50,6 @@ namespace GL
          } static transforms;
          GLMatrix trans_matrix;
          GLMatrix normal_matrix;
-         static bool transforms_changed;
          enum { max_lights = 8 };
          static std::array<bool, max_lights> light_enabled;
          struct Lights
@@ -63,8 +60,6 @@ namespace GL
             GLint lights;
             GLint padding[3];
          } static lights;
-         static bool lights_changed;
-         void init_uniform_buffers();
 
          void load_object(const std::string &obj);
          void load_object(const std::vector<Geo::Triangle> &obj);

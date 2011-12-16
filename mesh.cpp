@@ -10,14 +10,12 @@ namespace GL
       num_vertices(0), vbo(GL_ARRAY_BUFFER)
    {
       load_object(obj);
-      init_uniform_buffers();
    }
 
    Mesh::Mesh(const std::vector<Geo::Triangle> &triangles) :
       num_vertices(0), vbo(GL_ARRAY_BUFFER)
    {
       load_object(triangles);
-      init_uniform_buffers();
    }
 
    void Mesh::set_shader(Program::Ptr shader_)
@@ -88,19 +86,16 @@ namespace GL
 
    void Mesh::set_light_transform(const GLMatrix &matrix)
    {
-      transforms_changed = true;
       transforms.light_matrix = matrix;
    }
 
    void Mesh::set_projection(const GLMatrix &matrix)
    {
-      transforms_changed = true;
       transforms.projection = matrix;
    }
 
    void Mesh::set_camera(const GLMatrix &matrix)
    {
-      transforms_changed = true;
       transforms.camera = matrix;
    }
 
@@ -112,7 +107,6 @@ namespace GL
 
    void Mesh::set_light(unsigned index, const vec3 &pos, const vec3 &color)
    {
-      lights_changed = true;
       if (index >= max_lights)
          throw Exception("Light index out of bounds ...\n");
 
@@ -123,13 +117,11 @@ namespace GL
 
    void Mesh::set_ambient(const vec3 &color)
    {
-      lights_changed = true;
       lights.light_ambient = vec_conv<3, 4>(color);
    }
 
    void Mesh::unset_light(unsigned index)
    {
-      lights_changed = true;
       light_enabled[index] = false;
    }
 
@@ -138,93 +130,47 @@ namespace GL
       GLSYM(glUniform1i)(shader->uniform("texture"), 0);
       GLSYM(glUniform1i)(shader->uniform("shadow_texture"), 1);
 
-      if (transforms_changed)
-      {
-         trans_unibuf->bind();
-
-         void *data = GLSYM(glMapBufferRange)(GL_UNIFORM_BUFFER, 0, sizeof(transforms),
-               GL_MAP_WRITE_BIT);
-         if (!data)
-            throw Exception("Failed to map Uniform transform buffer!");
-         std::memcpy(data, &transforms, sizeof(transforms));
-         GLSYM(glUnmapBuffer)(GL_UNIFORM_BUFFER);
-
-         UniformBuffer::unbind();
-         transforms_changed = false;
-      }
-
+      GLSYM(glUniformMatrix4fv)(shader->uniform("projection_matrix"), 1,
+            GL_TRUE, transforms.projection());
+      GLSYM(glUniformMatrix4fv)(shader->uniform("camera_matrix"), 1,
+            GL_TRUE, transforms.camera());
+      GLSYM(glUniformMatrix4fv)(shader->uniform("light_matrix"), 1,
+            GL_TRUE, transforms.light_matrix());
       GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
-            GL_FALSE, trans_matrix());
+            GL_TRUE, trans_matrix());
       GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
-            GL_FALSE, normal_matrix());
-
-      trans_unibuf->bind_block(shader, shader->uniform_block_index("Transforms"));
+            GL_TRUE, normal_matrix());
    }
 
    void Mesh::set_lights()
    {
-      if (lights_changed)
+      Lights li;
+      li.lights = 0;
+      li.light_ambient = lights.light_ambient;
+      for (unsigned i = 0; i < max_lights; i++)
       {
-         Lights li;
-         li.lights = 0;
-         li.light_ambient = lights.light_ambient;
-         for (unsigned i = 0; i < max_lights; i++)
-         {
-            if (!light_enabled[i])
-               continue;
+         if (!light_enabled[i])
+            continue;
 
-            std::copy(lights.light_pos[i](), lights.light_pos[i]() + 4,
-                  li.light_pos[li.lights]());
-            std::copy(lights.light_color[i](), lights.light_color[i]() + 4,
-                  li.light_color[li.lights]());
-            li.lights++;
-         }
-
-         lights_unibuf->bind();
-         void *data = GLSYM(glMapBufferRange)(GL_UNIFORM_BUFFER, 0, sizeof(lights), GL_MAP_WRITE_BIT);
-         if (!data)
-            throw Exception("Failed to map Uniform light buffer!");
-         std::memcpy(data, &li, sizeof(li));
-         GLSYM(glUnmapBuffer)(GL_UNIFORM_BUFFER);
-
-         UniformBuffer::unbind();
-         lights_changed = false;
+         std::copy(lights.light_pos[i](), lights.light_pos[i]() + 4,
+               li.light_pos[li.lights]());
+         std::copy(lights.light_color[i](), lights.light_color[i]() + 4,
+               li.light_color[li.lights]());
+         li.lights++;
       }
 
-      lights_unibuf->bind_block(shader,
-            shader->uniform_block_index("Lights"));
-   }
-
-   void Mesh::init_uniform_buffers()
-   {
-      if (trans_unibuf && lights_unibuf)
-         return;
-
-      transforms_changed = false;
-      lights_changed = false;
-
-      trans_unibuf = UniformBuffer::shared();
-      lights_unibuf = UniformBuffer::shared();
-
-      trans_unibuf->bind();
-      GLSYM(glBufferData)(GL_UNIFORM_BUFFER, sizeof(transforms),
-            nullptr, GL_DYNAMIC_DRAW);
-      lights_unibuf->bind();
-      GLSYM(glBufferData)(GL_UNIFORM_BUFFER, sizeof(lights),
-            nullptr, GL_DYNAMIC_DRAW);
-      UniformBuffer::unbind();
-
-      trans_unibuf->bind(0);
-      lights_unibuf->bind(1);
+      GLSYM(glUniform1i)(shader->uniform("lights_count"), li.lights);
+      GLSYM(glUniform3f)(shader->uniform("light_ambient"),
+            li.light_ambient(0), li.light_ambient(1), li.light_ambient(2));
+      GLSYM(glUniform3fv)(shader->uniform("lights_pos"), li.lights,
+            li.light_pos[0]());
+      GLSYM(glUniform3fv)(shader->uniform("lights_color"), li.lights,
+            li.light_color[0]());
    }
 
    Program::Ptr Mesh::shader;
-   UniformBuffer::Ptr Mesh::trans_unibuf;
-   UniformBuffer::Ptr Mesh::lights_unibuf;
    Mesh::Transforms Mesh::transforms;
    Mesh::Lights Mesh::lights;
-   bool Mesh::transforms_changed;
-   bool Mesh::lights_changed;
    std::array<bool, Mesh::max_lights> Mesh::light_enabled;
 }
 

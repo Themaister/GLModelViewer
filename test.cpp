@@ -165,7 +165,7 @@ static void key_callback(unsigned key, bool pressed,
 
 static void gl_prog(const std::vector<std::string> &object_paths)
 {
-   auto win = Window::get(640, 480, {3, 3});
+   auto win = Window::get(640, 480, {4, 2});
    win->vsync();
 
    Camera camera;

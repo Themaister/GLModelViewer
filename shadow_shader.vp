@@ -4,13 +4,9 @@ layout(location = 0) in vec4 in_pos;
 layout(location = 1) in vec2 in_tex;
 layout(location = 2) in vec4 in_normal;
 
-layout(row_major) uniform;
-layout(std140) uniform Transforms
-{
-   mat4 projection_matrix;
-   mat4 camera_matrix;
-   mat4 light_matrix;
-};
+uniform mat4 projection_matrix;
+uniform mat4 camera_matrix;
+uniform mat4 light_matrix;
 uniform mat4 trans_matrix;
 
 void main()

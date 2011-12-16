@@ -7,13 +7,10 @@ in vec2 tex_coord;
 in vec3 shadow;
 
 #define MAX_LIGHTS 8
-layout(std140) uniform Lights
-{
-   vec3 light_ambient;
-   vec3 lights_pos[MAX_LIGHTS];
-   vec3 lights_color[MAX_LIGHTS];
-   int lights_count;
-};
+uniform vec3 light_ambient;
+uniform vec3 lights_pos[MAX_LIGHTS];
+uniform vec3 lights_color[MAX_LIGHTS];
+uniform int lights_count;
 uniform sampler2D texture;
 uniform sampler2DShadow shadow_texture;
 
