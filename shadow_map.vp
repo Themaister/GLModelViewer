@@ -1,0 +1,23 @@
+#version 330 core
+
+layout(location = 0) in vec4 in_pos;
+
+uniform mat4 projection_matrix;
+uniform mat4 light_matrix;
+
+out vec4 shadow;
+
+const mat4 tex_bias = mat4(
+   0.5, 0.0, 0.0, 0.0,
+   0.0, 0.5, 0.0, 0.0,
+   0.0, 0.0, 0.5, 0.0,
+   0.5, 0.5, 0.5, 1.0);
+
+void main()
+{
+   vec4 projected_light = light_matrix * in_pos;
+   shadow = tex_bias * projected_light;
+
+   gl_Position = projection_matrix * in_pos;
+}
+

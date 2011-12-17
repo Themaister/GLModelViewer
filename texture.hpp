@@ -42,24 +42,35 @@ namespace GL
          Image load_tga(const std::string &path);
    };
 
-   class ShadowBuffer : private GLU::SmartDefs<ShadowBuffer>, public GLResource
+   class RenderBuffer : private GLU::SmartDefs<RenderBuffer>, public GLResource
    {
       public:
-         DECL_SHARED(ShadowBuffer);
-         ShadowBuffer(unsigned width, unsigned height);
-         ~ShadowBuffer();
+         DECL_SHARED(RenderBuffer);
+         RenderBuffer(unsigned width, unsigned height);
+         ~RenderBuffer();
 
          void size(unsigned &width, unsigned &height) const;
          void bind();
          void unbind();
          void bind_texture(unsigned index);
          void unbind_texture();
+         
+         void operator=(const RenderBuffer&) = delete;
 
-      private:
+      protected:
+         RenderBuffer();
          GLuint fb_obj;
-         GLuint depth_texture;
+         GLuint tex;
+         GLuint render_buffer;
          unsigned bound_index;
          unsigned width, height;
+   };
+
+   class ShadowBuffer : private GLU::SmartDefs<ShadowBuffer>, public RenderBuffer
+   {
+      public:
+         DECL_SHARED(ShadowBuffer);
+         ShadowBuffer(unsigned width, unsigned height);
    };
 }
 

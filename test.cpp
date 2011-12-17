@@ -165,7 +165,7 @@ static void key_callback(unsigned key, bool pressed,
 
 static void gl_prog(const std::vector<std::string> &object_paths)
 {
-   auto win = Window::get(640, 480, {3, 3});
+   auto win = Window::get(640, 480, {4, 2});
    win->vsync();
 
    Camera camera;
@@ -195,14 +195,20 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    auto shadow_prog = Program::shared();
    shadow_prog->add(FileToString("shadow_shader.vp"), Shader::Type::Vertex);
    shadow_prog->link();
+   auto shadow_map_prog = Program::shared();
+   shadow_map_prog->add(FileToString("shadow_map.vp"), Shader::Type::Vertex);
+   shadow_map_prog->add(FileToString("shadow_map.fp"), Shader::Type::Fragment);
+   shadow_map_prog->link();
 
    ShadowBuffer shadow_buf(2048, 2048);
+   RenderBuffer shadow_map_buf(2048, 2048);
 
    unsigned width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.05, 0.05, 0.05});
    Mesh::set_shader(prog);
+   Mesh::set_viewport_size({width, height});
 
    std::vector<Mesh::Ptr> meshes;
    for (auto &path : object_paths)
@@ -220,26 +226,11 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          GLSYM(glViewport)(0, 0, width, height);
          auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
          Mesh::set_projection(proj_matrix);
+         Mesh::set_viewport_size({width, height});
          frame_count = 0.0;
       }
 
-      vec3 light_pos {-150, 100, -25};
-      Mesh::set_light(0, light_pos, {10, 10, 10});
-      auto light_camera = Projection(1, 1000) * Derotate(vec3({1, 0, 0}) - light_pos) * Translate(-light_pos);
-      Mesh::set_light_transform(light_camera);
-
-      auto camera_matrix = update_camera(camera, 1.0);
-      Mesh::set_player_pos(camera.pos);
-
-      Mesh::set_shader(shadow_prog);
-      shadow_buf.bind();
-      GLSYM(glClear)(GL_DEPTH_BUFFER_BIT);
-
-      unsigned shadow_w, shadow_h;
-      shadow_buf.size(shadow_w, shadow_h);
-      GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
-
-      // 1st pass. Render shadow map.
+      // Update uniforms.
       scale *= scale_factor;
       for (auto mesh : meshes)
       {
@@ -248,20 +239,52 @@ static void gl_prog(const std::vector<std::string> &object_paths)
 
          auto trans_matrix = Translate(0.0, 0.0, -25.0) * Scale(scale);
          mesh->set_transform(trans_matrix);
-         mesh->render();
       }
+
+      vec3 light_pos {-150, 100, -25};
+      Mesh::set_light(0, light_pos, {10, 10, 10});
+      auto light_camera = Projection(1, 1000) * Derotate(vec3({0, 0, -25}) - light_pos) * Translate(-light_pos);
+      Mesh::set_light_transform(light_camera);
+
+      auto camera_matrix = update_camera(camera, 1.0);
+      Mesh::set_player_pos(camera.pos);
+      Mesh::set_camera(camera_matrix);
+
+      // Begin rendering
+      // 1st pass. Render depth map.
+      Mesh::set_shader(shadow_prog);
+      shadow_buf.bind();
+      GLSYM(glClear)(GL_DEPTH_BUFFER_BIT);
+      unsigned shadow_w, shadow_h;
+      shadow_buf.size(shadow_w, shadow_h);
+      GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
+
+      for (auto mesh : meshes)
+         mesh->render();
       shadow_buf.unbind();
 
-      // 2nd pass. Render scene with shadows! :D
-      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      GLSYM(glViewport)(0, 0, width, height);
+      // 2nd pass. Generate a shadow map which we can blur.
+      shadow_map_buf.bind();
       shadow_buf.bind_texture(1);
-      Mesh::set_shader(prog);
-      Mesh::set_camera(camera_matrix);
+      Mesh::set_shader(shadow_map_prog);
+      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      shadow_map_buf.size(shadow_w, shadow_h);
+      GLSYM(glViewport)(0, 0, shadow_w, shadow_h);
+      shadow_buf.bind_texture(1);
 
       for (auto mesh : meshes)
          mesh->render();
       shadow_buf.unbind_texture();
+      shadow_map_buf.unbind();
+
+      // 3rd pass. Render final scene with blurry shadow map.
+      shadow_map_buf.bind_texture(1);
+      GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GLSYM(glViewport)(0, 0, width, height);
+      Mesh::set_shader(prog);
+      for (auto mesh : meshes)
+         mesh->render();
+      shadow_map_buf.unbind_texture();
 
       frame_count += 1.0;
       win->flip();

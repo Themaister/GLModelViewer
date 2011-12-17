@@ -24,6 +24,7 @@ namespace GL
          static void set_projection(const GLMatrix &matrix);
          static void set_camera(const GLMatrix &matrix);
 
+         static void set_viewport_size(const ivec2 &size);
          static void set_player_pos(const vec3 &pos);
          static void set_light_transform(const GLMatrix &matrix);
          void set_transform(const GLMatrix &matrix);
@@ -62,6 +63,7 @@ namespace GL
             GLint padding[3];
          } static lights;
          static vec3 player_pos;
+         static ivec2 viewport_size;
 
          void load_object(const std::string &obj);
          void load_object(const std::vector<Geo::Triangle> &obj);

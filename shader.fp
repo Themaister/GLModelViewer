@@ -1,7 +1,6 @@
 #version 330 core
 
 layout(location = 0) out vec4 out_color;
-in vec4 shadow;
 in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
@@ -11,9 +10,10 @@ uniform vec3 light_ambient;
 uniform vec3 player_pos;
 uniform vec3 lights_pos[MAX_LIGHTS];
 uniform vec3 lights_color[MAX_LIGHTS];
+uniform ivec2 viewport_size;
 uniform int lights_count;
-uniform sampler2D texture;
-uniform sampler2DShadow shadow_texture;
+layout(binding = 0) uniform sampler2D texture;
+layout(binding = 1) uniform sampler2D shadow_texture;
 
 vec3 colorconv(vec3 c)
 {
@@ -38,11 +38,15 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
    return specular + diffuse;
 }
 
+#define decl(deg) vec2(cos(2 * 3.1415 * deg / 8.0), sin(2 * 3.1415 * deg / 8.0))
+const vec2 offsets[25] = {
+   decl(0), decl(1), decl(2), decl(3),
+   decl(4), decl(5), decl(6), decl(7)
+};
+
 void main()
 {
    vec4 tex = texture2D(texture, tex_coord);
-   if (tex.a < 0.5) // Alpha test
-      discard;
 
    vec3 result = vec3(0.0);
    int count = min(MAX_LIGHTS, lights_count);
@@ -50,7 +54,18 @@ void main()
    for (int i = 0; i < count; i++)
       result += apply_light(lights_pos[i], lights_color[i], 30.0, 12.0);
 
-   float shadow_factor = shadow.z / shadow.w < shadow2DProj(shadow_texture, shadow) + 0.00005 ? 1.0 : 0.0;
+   vec2 shadow = vec2(gl_FragCoord.xy) / vec2(viewport_size);
+
+   float shadow_factor = 0.0;
+   for (int i = 0; i < 8; i++)
+   {
+      shadow_factor += 0.8 * texture2D(shadow_texture, shadow + offsets[i] / 8092.0).r;
+      shadow_factor += 0.2 * texture2D(shadow_texture, shadow + offsets[i] / 4096.0).r;
+      shadow_factor += 0.05 * texture2D(shadow_texture, shadow + offsets[i] / 2048.0).r;
+   }
+
+   shadow_factor /= (0.8 + 0.2 + 0.05) * 8;
+
    out_color = vec4(tex.rgb * (light_ambient + result * shadow_factor), tex.a);
 }
 

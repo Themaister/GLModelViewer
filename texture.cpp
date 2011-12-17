@@ -160,31 +160,46 @@ namespace GL
       return img;
    }
 
-   ShadowBuffer::ShadowBuffer(unsigned width, unsigned height)
+   RenderBuffer::RenderBuffer()
+   {
+      GLSYM(glGenFramebuffers)(1, &fb_obj);
+      GLSYM(glGenTextures)(1, &tex);
+      GLSYM(glGenRenderbuffers)(1, &render_buffer);
+   }
+
+   RenderBuffer::RenderBuffer(unsigned width, unsigned height)
       : width(width), height(height)
    {
       GLSYM(glGenFramebuffers)(1, &fb_obj);
-      GLSYM(glGenTextures)(1, &depth_texture);
+      GLSYM(glGenTextures)(1, &tex);
+      GLSYM(glGenRenderbuffers)(1, &render_buffer);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, tex);
 
-      GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
       GLSYM(glTexImage2D)(GL_TEXTURE_2D,
-            0, GL_DEPTH_COMPONENT32,
+            0, GL_RGBA,
             width, height,
-            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+            0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, nullptr);
+
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
 
+      GLSYM(glBindRenderbuffer)(GL_RENDERBUFFER, render_buffer);
+      GLSYM(glRenderbufferStorage)(GL_RENDERBUFFER,
+            GL_DEPTH_COMPONENT32,
+            width, height);
+      GLSYM(glBindRenderbuffer)(GL_RENDERBUFFER, 0);
+
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
+      GLSYM(glFramebufferTexture2D)(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_2D, tex, 0);
+      GLSYM(glFramebufferRenderbuffer)(GL_FRAMEBUFFER,
+            GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, render_buffer);
 
-      GLSYM(glFramebufferTexture2D)(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-            GL_TEXTURE_2D, depth_texture, 0);
-      glDrawBuffer(GL_NONE);
-
-      GLenum status;
-      if ((status = GLSYM(glCheckFramebufferStatus)(GL_FRAMEBUFFER)) !=
+      if (GLSYM(glCheckFramebufferStatus)(GL_FRAMEBUFFER) !=
             GL_FRAMEBUFFER_COMPLETE)
       {
          throw Exception("Framebuffer is not complete!");
@@ -193,40 +208,74 @@ namespace GL
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
    }
 
-   ShadowBuffer::~ShadowBuffer()
-   {
-      GLSYM(glDeleteFramebuffers)(1, &fb_obj);
-      GLSYM(glDeleteTextures)(1, &depth_texture);
-   }
-
-   void ShadowBuffer::bind()
+   void RenderBuffer::bind()
    {
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
    }
 
-   void ShadowBuffer::bind_texture(unsigned index)
+   void RenderBuffer::bind_texture(unsigned index)
    {
       GLSYM(glActiveTexture)(GL_TEXTURE0 + index);
-      GLSYM(glBindTexture)(GL_TEXTURE_2D, depth_texture);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, tex);
       bound_index = index;
    }
 
-   void ShadowBuffer::unbind_texture()
+   void RenderBuffer::unbind_texture()
    {
       GLSYM(glActiveTexture)(GL_TEXTURE0 + bound_index);
       GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
       bound_index = 0;
    }
 
-   void ShadowBuffer::unbind()
+   void RenderBuffer::unbind()
    {
       GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
    }
 
-   void ShadowBuffer::size(unsigned &width, unsigned &height) const
+   void RenderBuffer::size(unsigned &width, unsigned &height) const
    {
       width = this->width;
       height = this->height;
+   }
+
+   RenderBuffer::~RenderBuffer()
+   {
+      GLSYM(glDeleteFramebuffers)(1, &fb_obj);
+      GLSYM(glDeleteTextures)(1, &tex);
+      GLSYM(glDeleteRenderbuffers)(1, &render_buffer);
+   }
+
+   ShadowBuffer::ShadowBuffer(unsigned width, unsigned height)
+      : RenderBuffer()
+   {
+      this->width = width;
+      this->height = height;
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, tex);
+      GLSYM(glTexImage2D)(GL_TEXTURE_2D,
+            0, GL_DEPTH_COMPONENT32,
+            width, height,
+            0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+      GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+      GLSYM(glBindTexture)(GL_TEXTURE_2D, 0);
+
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, fb_obj);
+
+      GLSYM(glFramebufferTexture2D)(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_TEXTURE_2D, tex, 0);
+      glDrawBuffer(GL_NONE);
+
+      if (GLSYM(glCheckFramebufferStatus)(GL_FRAMEBUFFER) !=
+            GL_FRAMEBUFFER_COMPLETE)
+      {
+         throw Exception("Framebuffer is not complete!");
+      }
+
+      GLSYM(glBindFramebuffer)(GL_FRAMEBUFFER, 0);
    }
 }
 

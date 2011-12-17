@@ -74,6 +74,11 @@ namespace GL
       this->tex = tex;
    }
 
+   void Mesh::set_viewport_size(const ivec2 &size)
+   {
+      viewport_size = size;
+   }
+
    void Mesh::set_transform(const GLMatrix &matrix)
    {
       trans_matrix = matrix;
@@ -132,9 +137,6 @@ namespace GL
 
    void Mesh::set_transforms()
    {
-      GLSYM(glUniform1i)(shader->uniform("texture"), 0);
-      GLSYM(glUniform1i)(shader->uniform("shadow_texture"), 1);
-
       auto proj = transforms.projection * transforms.camera * trans_matrix;
       auto light = transforms.light_matrix * trans_matrix;
 
@@ -174,6 +176,8 @@ namespace GL
             li.light_color[0]());
       GLSYM(glUniform3f)(shader->uniform("player_pos"),
             player_pos(0), player_pos(1), player_pos(2));
+      GLSYM(glUniform2i)(shader->uniform("viewport_size"),
+            viewport_size(0), viewport_size(1));
    }
 
    Program::Ptr Mesh::shader;
@@ -181,5 +185,6 @@ namespace GL
    Mesh::Lights Mesh::lights;
    std::array<bool, Mesh::max_lights> Mesh::light_enabled;
    GL::vec3 Mesh::player_pos;
+   GL::ivec2 Mesh::viewport_size;
 }
 
