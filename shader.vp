@@ -9,20 +9,17 @@ uniform mat4 light_matrix;
 uniform mat4 trans_matrix;
 uniform mat4 normal_matrix;
 
+out vec4 shadow;
 out vec3 normal;
 out vec3 model_vector;
 out vec2 tex_coord;
-out vec3 shadow;
 
 void main()
 {
    vec4 world_vector = trans_matrix * in_pos;
 
    vec4 projected_light = light_matrix * in_pos;
-   // Project into [-1, 1] space.
-   vec3 shadow_pre = projected_light.xyz / projected_light.w;
-   // Adjust for [0, 1] space.
-   shadow = 0.5 * (shadow_pre + 1.0);
+   shadow = 0.5 * (projected_light / projected_light.w + 1.0);
 
    gl_Position = projection_matrix * in_pos;
 

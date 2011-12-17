@@ -1,10 +1,10 @@
 #version 330 core
 
 layout(location = 0) out vec4 out_color;
+in vec4 shadow;
 in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
-in vec3 shadow;
 
 #define MAX_LIGHTS 8
 uniform vec3 light_ambient;
@@ -38,8 +38,6 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
    return specular + diffuse;
 }
 
-#define LOOKUP(x, y) shadow_factor += (shadow.z <= textureOffset(shadow_texture, shadow, ivec2(x, y)) + 0.00003) ? (1.0 / 9.0) : 0.000
-
 void main()
 {
    vec4 tex = texture2D(texture, tex_coord);
@@ -50,12 +48,9 @@ void main()
    int count = min(MAX_LIGHTS, lights_count);
    
    for (int i = 0; i < count; i++)
-      result += apply_light(lights_pos[i], lights_color[i], 20.0, 40.0);
+      result += apply_light(lights_pos[i], lights_color[i], 30.0, 12.0);
 
-   float shadow_factor = 0.0;
-   LOOKUP(0, 0);
-   LOOKUP(0, 1); LOOKUP(1, 1); LOOKUP(-1, 1); LOOKUP(0, -1); LOOKUP(1, -1); LOOKUP(-1, -1); LOOKUP(1, 0); LOOKUP(-1, 0);
-   LOOKUP(0, 2); LOOKUP(2, 2); LOOKUP(-2, 2); LOOKUP(0, -2); LOOKUP(2, -2); LOOKUP(-2, -2); LOOKUP(2, 0); LOOKUP(-2, 0);
+   float shadow_factor = shadow.z / shadow.w < shadow2DProj(shadow_texture, shadow) + 0.00005 ? 1.0 : 0.0;
    out_color = vec4(tex.rgb * (light_ambient + result * shadow_factor), tex.a);
 }
 

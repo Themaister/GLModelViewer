@@ -187,7 +187,6 @@ namespace GL
       if ((status = GLSYM(glCheckFramebufferStatus)(GL_FRAMEBUFFER)) !=
             GL_FRAMEBUFFER_COMPLETE)
       {
-         std::cerr << "Error: 0x" << std::hex << status << std::endl;
          throw Exception("Framebuffer is not complete!");
       }
 

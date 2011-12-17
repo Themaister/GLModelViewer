@@ -224,7 +224,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
       }
 
       vec3 light_pos {-150, 100, -25};
-      Mesh::set_light(0, light_pos, {5, 5, 5});
+      Mesh::set_light(0, light_pos, {10, 10, 10});
       auto light_camera = Projection(1, 1000) * Derotate(vec3({1, 0, 0}) - light_pos) * Translate(-light_pos);
       Mesh::set_light_transform(light_camera);
 
