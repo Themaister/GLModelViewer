@@ -44,7 +44,7 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
 
 void main()
 {
-   vec4 tex = texture2D(texture, tex_coord);
+   vec4 tex = texture(texture, tex_coord);
 
    vec3 result0 = lights_count >= 1 ? apply_light(lights_pos[0], lights_color[0], 30.0, 12.0) : vec3(0.0);
    vec3 result1 = lights_count >= 2 ? apply_light(lights_pos[1], lights_color[1], 30.0, 12.0) : vec3(0.0);
@@ -58,9 +58,9 @@ void main()
    for (int i = -3; i <= 3; i++)
       for (int j = -3; j <= 3; j++)
    {
-      shadow_factor0 += texture2D(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      shadow_factor1 += texture2D(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      shadow_factor2 += texture2D(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      shadow_factor0 += texture(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      shadow_factor1 += texture(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      shadow_factor2 += texture(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
    }
 
    shadow_factor0 /= 49.0;
