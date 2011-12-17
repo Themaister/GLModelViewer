@@ -5,6 +5,8 @@ in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
 
+#define SHADOW_MAP_SIZE 2048.0
+
 #define MAX_LIGHTS 8
 uniform vec3 light_ambient;
 uniform vec3 player_pos;
@@ -13,7 +15,9 @@ uniform vec3 lights_color[MAX_LIGHTS];
 uniform ivec2 viewport_size;
 uniform int lights_count;
 layout(binding = 0) uniform sampler2D texture;
-layout(binding = 1) uniform sampler2D shadow_texture;
+layout(binding = 1) uniform sampler2D shadow_texture0;
+layout(binding = 2) uniform sampler2D shadow_texture1;
+layout(binding = 3) uniform sampler2D shadow_texture2;
 
 vec3 colorconv(vec3 c)
 {
@@ -38,34 +42,33 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
    return specular + diffuse;
 }
 
-#define decl(deg) vec2(cos(2 * 3.1415 * deg / 8.0), sin(2 * 3.1415 * deg / 8.0))
-const vec2 offsets[25] = {
-   decl(0), decl(1), decl(2), decl(3),
-   decl(4), decl(5), decl(6), decl(7)
-};
-
 void main()
 {
    vec4 tex = texture2D(texture, tex_coord);
 
-   vec3 result = vec3(0.0);
-   int count = min(MAX_LIGHTS, lights_count);
-   
-   for (int i = 0; i < count; i++)
-      result += apply_light(lights_pos[i], lights_color[i], 30.0, 12.0);
+   vec3 result0 = lights_count >= 1 ? apply_light(lights_pos[0], lights_color[0], 30.0, 12.0) : vec3(0.0);
+   vec3 result1 = lights_count >= 2 ? apply_light(lights_pos[1], lights_color[1], 30.0, 12.0) : vec3(0.0);
+   vec3 result2 = lights_count >= 3 ? apply_light(lights_pos[2], lights_color[2], 30.0, 12.0) : vec3(0.0);
 
    vec2 shadow = vec2(gl_FragCoord.xy) / vec2(viewport_size);
 
-   float shadow_factor = 0.0;
-   for (int i = 0; i < 8; i++)
+   float shadow_factor0 = 0.0;
+   float shadow_factor1 = 0.0;
+   float shadow_factor2 = 0.0;
+   for (int i = -3; i <= 3; i++)
+      for (int j = -3; j <= 3; j++)
    {
-      shadow_factor += 0.8 * texture2D(shadow_texture, shadow + offsets[i] / 8092.0).r;
-      shadow_factor += 0.2 * texture2D(shadow_texture, shadow + offsets[i] / 4096.0).r;
-      shadow_factor += 0.05 * texture2D(shadow_texture, shadow + offsets[i] / 2048.0).r;
+      shadow_factor0 += texture2D(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      shadow_factor1 += texture2D(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      shadow_factor2 += texture2D(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
    }
 
-   shadow_factor /= (0.8 + 0.2 + 0.05) * 8;
+   shadow_factor0 /= 49.0;
+   shadow_factor1 /= 49.0;
 
-   out_color = vec4(tex.rgb * (light_ambient + result * shadow_factor), tex.a);
+   out_color = vec4(tex.rgb * (light_ambient +
+      result0 * shadow_factor0 +
+      result1 * shadow_factor1 +
+      result2 * shadow_factor2), tex.a);
 }
 

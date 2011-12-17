@@ -56,11 +56,10 @@ namespace GL
          static std::array<bool, max_lights> light_enabled;
          struct Lights
          {
-            vec4 light_ambient;
-            vec4 light_pos[max_lights];
-            vec4 light_color[max_lights];
+            vec3 light_ambient;
+            vec3 light_pos[max_lights];
+            vec3 light_color[max_lights];
             GLint lights;
-            GLint padding[3];
          } static lights;
          static vec3 player_pos;
          static ivec2 viewport_size;
