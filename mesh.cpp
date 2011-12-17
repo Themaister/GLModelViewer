@@ -120,6 +120,11 @@ namespace GL
       lights.light_ambient = vec_conv<3, 4>(color);
    }
 
+   void Mesh::set_player_pos(const vec3 &pos)
+   {
+      player_pos = pos;
+   }
+
    void Mesh::unset_light(unsigned index)
    {
       light_enabled[index] = false;
@@ -130,12 +135,13 @@ namespace GL
       GLSYM(glUniform1i)(shader->uniform("texture"), 0);
       GLSYM(glUniform1i)(shader->uniform("shadow_texture"), 1);
 
+      auto proj = transforms.projection * transforms.camera * trans_matrix;
+      auto light = transforms.light_matrix * trans_matrix;
+
       GLSYM(glUniformMatrix4fv)(shader->uniform("projection_matrix"), 1,
-            GL_TRUE, transforms.projection());
-      GLSYM(glUniformMatrix4fv)(shader->uniform("camera_matrix"), 1,
-            GL_TRUE, transforms.camera());
+            GL_TRUE, proj());
       GLSYM(glUniformMatrix4fv)(shader->uniform("light_matrix"), 1,
-            GL_TRUE, transforms.light_matrix());
+            GL_TRUE, light());
       GLSYM(glUniformMatrix4fv)(shader->uniform("trans_matrix"), 1, 
             GL_TRUE, trans_matrix());
       GLSYM(glUniformMatrix4fv)(shader->uniform("normal_matrix"), 1, 
@@ -166,11 +172,14 @@ namespace GL
             li.light_pos[0]());
       GLSYM(glUniform3fv)(shader->uniform("lights_color"), li.lights,
             li.light_color[0]());
+      GLSYM(glUniform3f)(shader->uniform("player_pos"),
+            player_pos(0), player_pos(1), player_pos(2));
    }
 
    Program::Ptr Mesh::shader;
    Mesh::Transforms Mesh::transforms;
    Mesh::Lights Mesh::lights;
    std::array<bool, Mesh::max_lights> Mesh::light_enabled;
+   GL::vec3 Mesh::player_pos;
 }
 

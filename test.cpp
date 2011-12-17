@@ -177,7 +177,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          camera.delta = { x, y };
       });
 
-   float scale = 20.0;
+   float scale = 1.0;
    float scale_factor = 1.0;
    bool quit = false;
 
@@ -201,7 +201,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    unsigned width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
    Mesh::set_projection(proj_matrix);
-   Mesh::set_ambient({0.15, 0.15, 0.15});
+   Mesh::set_ambient({0.05, 0.05, 0.05});
    Mesh::set_shader(prog);
 
    std::vector<Mesh::Ptr> meshes;
@@ -223,12 +223,13 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          frame_count = 0.0;
       }
 
-      vec3 light_pos {0, 300, -25};
-      Mesh::set_light(0, light_pos, {10, 4, 4});
-      auto light_camera = Projection(1, 1000) * Derotate(vec3({0, -1, 0}) - light_pos) * Translate(-light_pos);
+      vec3 light_pos {-150, 100, -25};
+      Mesh::set_light(0, light_pos, {5, 5, 5});
+      auto light_camera = Projection(1, 1000) * Derotate(vec3({1, 0, 0}) - light_pos) * Translate(-light_pos);
       Mesh::set_light_transform(light_camera);
 
       auto camera_matrix = update_camera(camera, 1.0);
+      Mesh::set_player_pos(camera.pos);
 
       Mesh::set_shader(shadow_prog);
       shadow_buf.bind();
