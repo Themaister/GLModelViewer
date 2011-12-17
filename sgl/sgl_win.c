@@ -18,7 +18,9 @@
 #include "sgl.h"
 #include "sgl_keysym.h"
 
-#include <GL/gl.h>
+#define WGL_WGLEXT_PROTOTYPES
+#include <GL/wglext.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <windowsx.h>
@@ -39,6 +41,7 @@ static bool g_fullscreen;
 static bool g_ctx_modern;
 static unsigned g_gl_major;
 static unsigned g_gl_minor;
+static unsigned g_samples;
 
 static struct sgl_input_callbacks g_input_cbs;
 static bool g_mouse_relative;
@@ -64,47 +67,79 @@ static void setup_pixel_format(HDC hdc)
    SetPixelFormat(hdc, num_pixel_format, &pfd);
 }
 
+static PFNWGLCHOOSEPIXELFORMATEXTPROC pwglChoosePixelFormatARB;
+static PFNWGLCREATECONTEXTATTRIBSARBPROC pwglCreateContextAttribsARB;
+
+static void setup_dummy_window(void)
+{
+   WNDCLASSEXA dummy_class = {
+      .cbSize = sizeof(dummy_class),
+      .style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC,
+      .lpfnWndProc = DefWindowProc,
+      .hInstance = GetModuleHandle(NULL),
+      .hCursor = LoadCursor(NULL, IDC_ARROW),
+      .lpszClassName = "Dummy Window",
+   };
+
+   RegisterClassExA(&dummy_class);
+   HWND dummy = CreateWindowExA(0, "Dummy Window", "",
+         WS_OVERLAPPEDWINDOW,
+         CW_USEDEFAULT, CW_USEDEFAULT, 1, 1,
+         NULL, NULL, NULL, NULL);
+
+   ShowWindow(dummy, SW_HIDE);
+   HDC hdc = GetDC(dummy);
+   setup_pixel_format(hdc);
+   HGLRC ctx = wglCreateContext(hdc);
+   wglMakeCurrent(hdc, ctx);
+
+   pwglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATEXTPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+   pwglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+
+   wglMakeCurrent(NULL, NULL);
+   wglDeleteContext(ctx);
+   DestroyWindow(dummy);
+   UnregisterClassA("Dummy Window", GetModuleHandle(NULL));
+}
+
+static void setup_pixel_format_modern(HDC hdc)
+{
+   int pixel_format;
+   UINT num_formats;
+
+   const int attribs[] = {
+      WGL_DOUBLE_BUFFER_ARB, TRUE,
+      WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+      WGL_RED_BITS_ARB, 8,
+      WGL_GREEN_BITS_ARB, 8,
+      WGL_BLUE_BITS_ARB, 8,
+      WGL_ALPHA_BITS_ARB, 8,
+      WGL_DEPTH_BITS_ARB, 24,
+      WGL_STENCIL_BITS_ARB, 8,
+      WGL_SAMPLE_BUFFERS_ARB, 1,
+      WGL_SAMPLES_ARB, g_samples,
+      0, 0,
+   };
+
+   pwglChoosePixelFormatARB(hdc, attribs, (const float[]) {0, 0}, 1, &pixel_format, &num_formats);
+   PIXELFORMATDESCRIPTOR pfd;
+   DescribePixelFormat(hdc, pixel_format, sizeof(pfd), &pfd);
+   SetPixelFormat(hdc, pixel_format, &pfd);
+}
+
 static void create_gl_context(HWND hwnd)
 {
    g_hdc = GetDC(hwnd);
-   if (!g_hdc)
+
+   bool has_modern = pwglChoosePixelFormatARB && pwglCreateContextAttribsARB;
+
+   if (has_modern)
+      setup_pixel_format_modern(g_hdc);
+   else
+      setup_pixel_format(g_hdc);
+   
+   if (g_ctx_modern && has_modern)
    {
-      g_quit = true;
-      return;
-   }
-
-   setup_pixel_format(g_hdc);
-   g_hrc = wglCreateContext(g_hdc);
-   if (!g_hrc)
-   {
-      g_quit = true;
-      return;
-   }
-
-   if (wglMakeCurrent(g_hdc, g_hrc) != TRUE)
-   {
-      g_quit = true;
-      wglDeleteContext(g_hrc);
-   }
-
-   // Take it to the limit! :D
-   if (g_ctx_modern)
-   {
-      typedef HGLRC (*ContextProc)(HDC, HGLRC, const int *);
-      ContextProc proc = (ContextProc)sgl_get_proc_address("wglCreateContextAttribsARB");
-      if (!proc)
-      {
-         fprintf(stderr, "[SGL]: Cannot find wglCreateContextAttribsARB. Forced to use legacy context.\n");
-         return;
-      }
-
-#define WGL_CONTEXT_MAJOR_VERSION_ARB           0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB           0x2092
-#define WGL_CONTEXT_FLAGS_ARB                   0x2094
-#define WGL_CONTEXT_PROFILE_MASK_ARB            0x9126
-#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB        0x0001
-#define WGL_CONTEXT_DEBUG_BIT_ARB               0x0001
-
       const int attribs[] = {
          WGL_CONTEXT_MAJOR_VERSION_ARB, g_gl_major,
          WGL_CONTEXT_MINOR_VERSION_ARB, g_gl_minor,
@@ -115,11 +150,13 @@ static void create_gl_context(HWND hwnd)
          0
       };
 
-      HGLRC new_ctx = proc(g_hdc, NULL, attribs);
-      wglMakeCurrent(NULL, NULL);
-      wglDeleteContext(g_hrc);
-      wglMakeCurrent(g_hdc, new_ctx);
-      g_hrc = new_ctx;
+      g_hrc = pwglCreateContextAttribsARB(g_hdc, NULL, attribs);
+      wglMakeCurrent(g_hdc, g_hrc);
+   }
+   else
+   {
+      g_hrc = wglCreateContext(g_hdc);
+      wglMakeCurrent(g_hdc, g_hrc);
    }
 }
 
@@ -207,6 +244,9 @@ int sgl_init(const struct sgl_context_options *opts)
    g_ctx_modern = opts->context.style == SGL_CONTEXT_MODERN;
    g_gl_major = opts->context.major;
    g_gl_minor = opts->context.minor;
+   g_samples = opts->samples == 0 ? 1 : opts->samples;
+
+   setup_dummy_window();
 
    WNDCLASSEXA wndclass = {
       .cbSize = sizeof(wndclass),
@@ -216,7 +256,7 @@ int sgl_init(const struct sgl_context_options *opts)
       .hCursor = LoadCursor(NULL, IDC_ARROW),
       .lpszClassName = "SGL Window",
    };
-   
+
    if (!RegisterClassExA(&wndclass))
       return SGL_ERROR;
 

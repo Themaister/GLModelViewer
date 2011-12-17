@@ -66,6 +66,9 @@ struct sgl_context_options
    // Swap interval. 0 = No VSync, 1 = VSync.
    unsigned swap_interval;
 
+   // Multisampling (AA). A value of 0 implies 1xAA.
+   unsigned samples;
+
    // Initial window title.
    const char *title;
 };
