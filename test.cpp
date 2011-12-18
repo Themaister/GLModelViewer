@@ -203,7 +203,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    std::shared_ptr<ShadowBuffer> shadow_buf[3] = { ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024) };
    std::shared_ptr<RenderBuffer> shadow_map_buf[3] = { RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024) };
 
-   unsigned width = 640, height = 480;
+   int width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
    Mesh::set_projection(proj_matrix);
    Mesh::set_ambient({0.05, 0.05, 0.05});

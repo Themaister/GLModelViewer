@@ -26,7 +26,7 @@ namespace GL
          static Ptr get();
          void operator=(const Window&) = delete;
 
-         bool check_resize(unsigned &w, unsigned &h);
+         bool check_resize(int &w, int &h);
          bool alive();
          void flip();
          void vsync(bool activate = true);

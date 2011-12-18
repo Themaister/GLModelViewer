@@ -115,9 +115,13 @@ namespace GL
       sgl_set_swap_interval(activate ? 1 : 0);
    }
 
-   bool Window::check_resize(unsigned &w, unsigned &h)
+   bool Window::check_resize(int &w, int &h)
    {
-      return sgl_check_resize(&w, &h);
+      unsigned w_ = w, h_ = h;
+      bool ret = sgl_check_resize(&w_, &h_);
+      w = w_;
+      h = h_;
+      return ret;
    }
 
    bool Window::alive()
