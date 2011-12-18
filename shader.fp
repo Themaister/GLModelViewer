@@ -55,16 +55,16 @@ void main()
    float shadow_factor0 = 0.0;
    float shadow_factor1 = 0.0;
    float shadow_factor2 = 0.0;
-   for (int i = -3; i <= 3; i++)
-      for (int j = -3; j <= 3; j++)
+   for (int i = -1; i <= 1; i++)
+      for (int j = -1; j <= 1; j++)
    {
       shadow_factor0 += texture(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
       shadow_factor1 += texture(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
       shadow_factor2 += texture(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
    }
 
-   shadow_factor0 /= 49.0;
-   shadow_factor1 /= 49.0;
+   shadow_factor0 /= 9.0;
+   shadow_factor1 /= 9.0;
 
    out_color = vec4(tex.rgb * (light_ambient +
       result0 * shadow_factor0 +
