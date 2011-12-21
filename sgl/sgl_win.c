@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <windowsx.h>
+#include <stdlib.h>
 
 static HWND g_hwnd;
 static HGLRC g_hrc;
@@ -231,6 +232,21 @@ static bool set_fullscreen(unsigned width, unsigned height)
    };
 
    return ChangeDisplaySettings(&devmode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL;
+}
+
+struct sgl_resolution *sgl_get_desktop_modes(unsigned *num_modes)
+{
+   struct sgl_resolution *sgl_modes = calloc(1, sizeof(*sgl_modes));
+   if (!sgl_modes)
+      return NULL;
+
+   *num_modes = 1;
+
+   RECT rect;
+   GetClientRect(GetDesktopWindow(), &rect);
+   sgl_modes[0].width = rect.right - rect.left;
+   sgl_modes[0].height = rect.bottom - rect.top;
+   return sgl_modes;
 }
 
 int sgl_init(const struct sgl_context_options *opts)
