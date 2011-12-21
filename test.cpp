@@ -200,8 +200,8 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    shadow_map_prog->add(FileToString("shadow_map.fp"), Shader::Type::Fragment);
    shadow_map_prog->link();
 
-   std::shared_ptr<ShadowBuffer> shadow_buf[3] = { ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024) };
-   std::shared_ptr<RenderBuffer> shadow_map_buf[3] = { RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024) };
+   ShadowBuffer::Ptr shadow_buf[3] = { ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024) };
+   RenderBuffer::Ptr shadow_map_buf[3] = { RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024) };
 
    int width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
@@ -242,9 +242,9 @@ static void gl_prog(const std::vector<std::string> &object_paths)
       }
 
       vec3 light_pos[3] = {{-150, 100, -25}, {0, 200, -25}, {100, 200, -100}};
-      Mesh::set_light(0, light_pos[0], {3, 0, 0});
-      Mesh::set_light(1, light_pos[1], {0, 3, 0});
-      Mesh::set_light(2, light_pos[2], {0, 0, 3});
+      Mesh::set_light(0, light_pos[0], {2, 2, 2});
+      Mesh::set_light(1, light_pos[1], {2, 2, 2});
+      Mesh::set_light(2, light_pos[2], {2, 2, 2});
       GLMatrix light_camera[3] = {
          Projection(2, 1000) * Derotate(vec3({0, 0, -25}) - light_pos[0]) * Translate(-light_pos[0]),
          Projection(2, 1000) * Derotate(vec3({0, 0, -25}) - light_pos[1]) * Translate(-light_pos[1]),
