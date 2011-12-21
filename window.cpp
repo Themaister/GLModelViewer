@@ -22,7 +22,7 @@ namespace GL
       opts.context.style = SGL_CONTEXT_MODERN;
       opts.context.major = gl_version.first;
       opts.context.minor = gl_version.second;
-      opts.samples = 8;
+      opts.samples = 4;
       opts.res.width = width;
       opts.res.height = height;
       opts.screen_type = fullscreen ? SGL_SCREEN_WINDOWED_FULLSCREEN :
