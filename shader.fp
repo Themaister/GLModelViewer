@@ -1,4 +1,5 @@
-#version 420 core
+#version 330 core
+#extension GL_ARB_shading_language_420pack : enable
 
 layout(location = 0) out vec4 out_color;
 in vec3 normal;
