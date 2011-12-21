@@ -200,8 +200,8 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    shadow_map_prog->add(FileToString("shadow_map.fp"), Shader::Type::Fragment);
    shadow_map_prog->link();
 
-   ShadowBuffer::Ptr shadow_buf[3] = { ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024), ShadowBuffer::shared(1024, 1024) };
-   RenderBuffer::Ptr shadow_map_buf[3] = { RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024), RenderBuffer::shared(1024, 1024) };
+   std::shared_ptr<ShadowBuffer> shadow_buf[1] = { ShadowBuffer::shared(1024, 1024) };
+   std::shared_ptr<RenderBuffer> shadow_map_buf[1] = { RenderBuffer::shared(1024, 1024) };
 
    int width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
@@ -241,21 +241,17 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          mesh->set_transform(trans_matrix);
       }
 
-      vec3 light_pos[3] = {{-150, 100, -25}, {0, 200, -25}, {100, 200, -100}};
-      Mesh::set_light(0, light_pos[0], {2, 2, 2});
-      Mesh::set_light(1, light_pos[1], {2, 2, 2});
-      Mesh::set_light(2, light_pos[2], {2, 2, 2});
-      GLMatrix light_camera[3] = {
+      vec3 light_pos[1] = {{-150, 100, -25}};
+      Mesh::set_light(0, light_pos[0], {10, 10, 10});
+      GLMatrix light_camera[1] = {
          Projection(2, 1000) * Derotate(vec3({0, 0, -25}) - light_pos[0]) * Translate(-light_pos[0]),
-         Projection(2, 1000) * Derotate(vec3({0, 0, -25}) - light_pos[1]) * Translate(-light_pos[1]),
-         Projection(2, 1000) * Derotate(vec3({0, 0, -25}) - light_pos[2]) * Translate(-light_pos[2]),
       };
 
       auto camera_matrix = update_camera(camera, 1.0);
       Mesh::set_player_pos(camera.pos);
       Mesh::set_camera(camera_matrix);
 
-      for (unsigned i = 0; i < 3; i++)
+      for (unsigned i = 0; i < 1; i++)
       {
          Mesh::set_light_transform(light_camera[i]);
          // Begin rendering
@@ -287,16 +283,12 @@ static void gl_prog(const std::vector<std::string> &object_paths)
 
       // 3rd pass. Render final scene with blurry shadow map.
       shadow_map_buf[0]->bind_texture(1);
-      shadow_map_buf[1]->bind_texture(2);
-      shadow_map_buf[2]->bind_texture(3);
       GLSYM(glClear)(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       GLSYM(glViewport)(0, 0, width, height);
       Mesh::set_shader(prog);
       for (auto mesh : meshes)
          mesh->render();
       shadow_map_buf[0]->unbind_texture();
-      shadow_map_buf[1]->unbind_texture();
-      shadow_map_buf[2]->unbind_texture();
 
       frame_count += 1.0;
       win->flip();

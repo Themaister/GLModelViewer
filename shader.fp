@@ -17,8 +17,8 @@ uniform ivec2 viewport_size;
 uniform int lights_count;
 layout(binding = 0) uniform sampler2D texture;
 layout(binding = 1) uniform sampler2D shadow_texture0;
-layout(binding = 2) uniform sampler2D shadow_texture1;
-layout(binding = 3) uniform sampler2D shadow_texture2;
+//layout(binding = 2) uniform sampler2D shadow_texture1;
+//layout(binding = 3) uniform sampler2D shadow_texture2;
 
 vec3 colorconv(vec3 c)
 {
@@ -60,16 +60,19 @@ void main()
       for (int j = -1; j <= 1; j++)
    {
       shadow_factor0 += texture2D(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      shadow_factor1 += texture2D(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      shadow_factor2 += texture2D(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      //shadow_factor1 += texture2D(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      //shadow_factor2 += texture2D(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
    }
 
    shadow_factor0 /= 9.0;
-   shadow_factor1 /= 9.0;
+   //shadow_factor1 /= 9.0;
+   //shadow_factor2 /= 9.0;
 
    out_color = vec4(tex.rgb * (light_ambient +
-      result0 * shadow_factor0 +
-      result1 * shadow_factor1 +
-      result2 * shadow_factor2), tex.a);
+      result0 * shadow_factor0
+      // + result1 * shadow_factor1
+      // + result2 * shadow_factor2
+      ),
+      tex.a);
 }
 
