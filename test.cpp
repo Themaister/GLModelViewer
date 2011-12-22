@@ -89,7 +89,7 @@ static GLMatrix update_camera(Camera &cam, float speed)
 
 static void key_callback(unsigned key, bool pressed,
       bool &quit, Camera &camera, float &scale_factor,
-      float &light_rot_y, float &light_rot_x)
+      float &light_rot_y)
 {
    quit |= key == SGLK_ESCAPE && pressed;
 
@@ -161,14 +161,6 @@ static void key_callback(unsigned key, bool pressed,
          light_rot_y = pressed ? -2.0 : 0.0;
          break;
 
-      case SGLK_i:
-         light_rot_x = pressed ? 1.0 : 0.0;
-         break;
-
-      case SGLK_k:
-         light_rot_x = pressed ? -1.0 : 0.0;
-         break;
-
       default:
          break;
    }
@@ -196,18 +188,16 @@ static void gl_prog(const std::vector<std::string> &object_paths)
 
    float scale = 1.0;
    float scale_factor = 1.0;
-   float light_total_rot_x = 0.0;
    float light_total_rot_y = 0.0;
-   float light_rot_x = 0.0;
    float light_rot_y = 0.0;
    bool quit = false;
 
-   win->set_key_cb([&quit, &camera, &scale_factor, &light_rot_x, &light_rot_y](unsigned key, bool pressed) {
-         key_callback(key, pressed, quit, camera, scale_factor, light_rot_y, light_rot_x);
+   win->set_key_cb([&quit, &camera, &scale_factor, &light_rot_y](unsigned key, bool pressed) {
+         key_callback(key, pressed, quit, camera, scale_factor, light_rot_y);
       });
 
    GLSYM(glEnable)(GL_DEPTH_TEST);
-   //GLSYM(glEnable)(GL_CULL_FACE);
+   GLSYM(glEnable)(GL_CULL_FACE);
 
    auto prog = Program::shared();
    prog->add(FileToString("shader.vp"), Shader::Type::Vertex);
@@ -227,7 +217,7 @@ static void gl_prog(const std::vector<std::string> &object_paths)
    int width = 640, height = 480;
    auto proj_matrix = Scale((float)height / width, 1, 1) * Projection(2, 1000);
    Mesh::set_projection(proj_matrix);
-   Mesh::set_ambient({0.05, 0.05, 0.05});
+   Mesh::set_ambient({0.15, 0.15, 0.15});
    Mesh::set_shader(prog);
    Mesh::set_viewport_size({width, height});
 
@@ -262,17 +252,10 @@ static void gl_prog(const std::vector<std::string> &object_paths)
          mesh->set_transform(trans_matrix);
       }
 
-      light_total_rot_x += light_rot_x;
       light_total_rot_y += light_rot_y;
-
-      if (light_total_rot_x > 60.0)
-         light_total_rot_x = 60.0;
-      else if (light_total_rot_x < -60.0)
-         light_total_rot_x = -60.0;
 
       vec3 light_pos[1] = {
          Translate(0, 100, -25) *
-         //Rotate(Rotation::X, light_total_rot_x) *
          Rotate(Rotation::Y, light_total_rot_y) *
             vec4({200, 0, 0, 1})};
       Mesh::set_light(0, light_pos[0], {10, 10, 10});

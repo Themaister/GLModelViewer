@@ -6,7 +6,7 @@ in vec3 normal;
 in vec3 model_vector;
 in vec2 tex_coord;
 
-#define SHADOW_MAP_SIZE 2048.0
+#define SHADOW_MAP_SIZE 1024.0
 
 #define MAX_LIGHTS 8
 uniform vec3 light_ambient;
@@ -17,8 +17,6 @@ uniform ivec2 viewport_size;
 uniform int lights_count;
 layout(binding = 0) uniform sampler2D texture;
 layout(binding = 1) uniform sampler2D shadow_texture0;
-//layout(binding = 2) uniform sampler2D shadow_texture1;
-//layout(binding = 3) uniform sampler2D shadow_texture2;
 
 vec3 colorconv(vec3 c)
 {
@@ -43,36 +41,42 @@ vec3 apply_light(vec3 pos, vec3 color, float diffuse_coeff, float specular_coeff
    return specular + diffuse;
 }
 
+#define elem(x, y) exp(-sqrt(dot(vec2(x, y), vec2(x, y))))
+#define row(n) elem(-2, n), elem(-1, n), elem(0, n), elem(1, n), elem(2, n)
+
+const float gaussian[25] = {
+   row(2),
+   row(1),
+   row(0),
+   row(-1),
+   row(-2),
+};
+
 void main()
 {
    vec4 tex = texture2D(texture, tex_coord);
+   if (tex.a < 0.5)
+      discard;
 
    vec3 result0 = lights_count >= 1 ? apply_light(lights_pos[0], lights_color[0], 30.0, 12.0) : vec3(0.0);
-   vec3 result1 = lights_count >= 2 ? apply_light(lights_pos[1], lights_color[1], 30.0, 12.0) : vec3(0.0);
-   vec3 result2 = lights_count >= 3 ? apply_light(lights_pos[2], lights_color[2], 30.0, 12.0) : vec3(0.0);
-
    vec2 shadow = vec2(gl_FragCoord.xy) / vec2(viewport_size);
 
    float shadow_factor0 = 0.0;
-   float shadow_factor1 = 0.0;
-   float shadow_factor2 = 0.0;
-   for (int i = -1; i <= 1; i++)
-      for (int j = -1; j <= 1; j++)
+   float filt_max = 0.0;
+   for (int i = -2; i <= 2; i++)
    {
-      shadow_factor0 += texture2D(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      //shadow_factor1 += texture2D(shadow_texture1, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
-      //shadow_factor2 += texture2D(shadow_texture2, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+      for (int j = -2; j <= 2; j++)
+      {
+         float filt = gaussian[(i + 2) * 5 + (j + 2)];
+         shadow_factor0 += filt * texture2D(shadow_texture0, shadow + vec2(i, j) / SHADOW_MAP_SIZE).r;
+         filt_max += filt;
+      }
    }
 
-   shadow_factor0 /= 9.0;
-   //shadow_factor1 /= 9.0;
-   //shadow_factor2 /= 9.0;
+   shadow_factor0 /= filt_max;
 
    out_color = vec4(tex.rgb * (light_ambient +
-      result0 * shadow_factor0
-      // + result1 * shadow_factor1
-      // + result2 * shadow_factor2
-      ),
+      result0 * shadow_factor0),
       tex.a);
 }
 

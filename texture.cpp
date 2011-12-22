@@ -252,7 +252,7 @@ namespace GL
       this->height = height;
       GLSYM(glBindTexture)(GL_TEXTURE_2D, tex);
       GLSYM(glTexImage2D)(GL_TEXTURE_2D,
-            0, GL_DEPTH_COMPONENT32,
+            0, GL_DEPTH_COMPONENT32F,
             width, height,
             0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
       GLSYM(glTexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
