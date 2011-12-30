@@ -20,15 +20,18 @@ namespace GL
       public:
          Vector()
          {
-            std::fill(vec.begin(), vec.end(), 0);
+            std::fill(vec.begin(), vec.end(), static_cast<T>(0));
          }
 
-         Vector(const std::initializer_list<T> &list)
+         Vector(const T* list)
          {
-            if (list.size() != N)
-               throw Exception("Invalid size of vector list...\n");
-            std::copy(list.begin(), list.end(), vec.begin());
+            std::copy(list, list + N, vec.begin());
          }
+
+         Vector(T t1)                   { vec[0] = t1; }
+         Vector(T t1, T t2)             { vec[0] = t1; vec[1] = t2; }
+         Vector(T t1, T t2, T t3)       { vec[0] = t1; vec[1] = t2; vec[2] = t3; }
+         Vector(T t1, T t2, T t3, T t4) { vec[0] = t1; vec[1] = t2; vec[2] = t3; vec[3] = t4; }
 
          T* operator()()
          {
@@ -116,7 +119,7 @@ namespace GL
       public:
          Matrix()
          {
-            std::fill(matrix, matrix + 16, 0);
+            std::fill(matrix, matrix + 16, static_cast<T>(0));
          }
 
          Matrix(const float *matrix_, unsigned size = 16)

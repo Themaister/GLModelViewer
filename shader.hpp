@@ -13,11 +13,10 @@ namespace GL
          ShaderException(GLuint shader);
    };
 
-   class Shader : private GLU::SmartDefs<Shader>, public GLResource
+   class Shader : public GLResource
    {
       public:
-         DECL_SHARED(Shader);
-         enum class Type : unsigned
+         enum Type
          {
             None,
             Vertex,
@@ -29,17 +28,16 @@ namespace GL
          ~Shader();
 
          GLuint object() const;
-         void operator=(const Shader&) = delete;
 
       private:
+         void operator=(const Shader&);
          GLuint shader;
          Type type;
    };
 
-   class Program : private GLU::SmartDefs<Program>, public GLResource
+   class Program : public GLResource
    {
       public:
-         DECL_SHARED(Program);
          Program();
          ~Program();
 
@@ -58,8 +56,6 @@ namespace GL
          void uniform_block_binding(unsigned block, unsigned index);
          GLint attrib(const std::string &key) const;
 
-         void operator=(const Program&) = delete;
-
          enum
          {
             VertexStream = 0,
@@ -68,8 +64,9 @@ namespace GL
          };
 
       private:
+         void operator=(const Program&);
          GLuint program;
-         std::vector<Shader::Ptr> shaders;
+         std::vector<std::shared_ptr<Shader>> shaders;
          bool m_linked;
    };
 }

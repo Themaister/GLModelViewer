@@ -1,96 +1,28 @@
 #ifndef UTILS_H__
 #define UTILS_H__
 
-#define DECL_SHARED(type) using ::GLU::SmartDefs< type >::Ptr; \
-   using ::GLU::SmartDefs< type >::shared
-
-#define DECL_UNIQUE(type) using ::GLU::SmartDefs< type >::UPtr; \
-   using ::GLU::SmartDefs< type >::unique
-
-#define DECL_SMART(type) DECL_SHARED(type); \
-   DECL_UNIQUE(type)
-
 #include <string>
 #include <sstream>
 
 namespace GLU
 {
-   template <class T>
-   std::string join(const T& t)
-   {
-      std::ostringstream stream;
-      stream << t;
-      return stream.str();
-   }
+   // MSVC 2010 doesn't support variadic templates.
+   template <class T1> std::string join(const T1& t1)
+      { std::ostringstream stream; stream << t1; return stream.str(); }
+   template <class T1, class T2> std::string join(const T1& t1, const T2& t2)
+      { std::ostringstream stream; stream << t1 << join(t2); return stream.str(); }
+   template <class T1, class T2, class T3> std::string join(const T1& t1, const T2& t2, const T3& t3)
+      { std::ostringstream stream; stream << t1 << join(t2, t3); return stream.str(); }
+   template <class T1, class T2, class T3, class T4> std::string join(const T1& t1, const T2& t2, const T3 &t3, const T4& t4)
+      { std::ostringstream stream; stream << t1 << join(t2, t3, t4); return stream.str(); }
+   template <class T1, class T2, class T3, class T4, class T5> std::string join(const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5)
+      { std::ostringstream stream; stream << t1 << join(t2, t3, t4, t5); return stream.str(); }
 
-   template <class T, class R, class... P>
-   std::string join(const T& t, const R& r, const P&... p)
-   {
-      std::ostringstream stream;
-      stream << t << join(r, p...);
-      return stream.str();
-   }
-
-   template <class T>
-   class RefCounted
-   {
-      public:
-         unsigned& ref()
-         {
-            return cnt;
-         }
-
-      private:
-         static unsigned cnt;
-   };
-   template <class T>
-   unsigned RefCounted<T>::cnt = 0;
+   std::string FileToString(const std::string &path);
 }
 
 #include <memory>
 #include <iomanip>
-
-namespace GLU
-{
-   // Template magic incoming!
-   namespace Internal
-   {
-      template <class T>
-      struct DeclareShared
-      {
-         typedef std::shared_ptr<T> type;
-      };
-
-      template <class T>
-      struct DeclareUnique
-      {
-         typedef std::unique_ptr<T> type;
-      };
-   }
-
-   // Inherit this privately to use a generic smart pointer interface.
-   template <class T>
-   struct SmartDefs
-   {
-      typedef typename Internal::DeclareShared<T>::type Ptr;
-      typedef typename Internal::DeclareUnique<T>::type UPtr;
-
-      template <class... P>
-      static Ptr shared(P&&... p)
-      {
-         return std::make_shared<T>(std::forward<P>(p)...);
-      }
-
-      template <class... P>
-      static UPtr unique(P&&... p)
-      {
-         return std::unique_ptr<T>(new T(std::forward<P>(p)...));
-      }
-   };
-   
-   std::string FileToString(const std::string &path);
-}
-
 #include "gl.hpp"
 #include "structure.hpp"
 
@@ -105,11 +37,11 @@ namespace GLU
       GL::GLMatrix Translate(GLfloat x, GLfloat y, GLfloat z);
       GL::GLMatrix Translate(const GL::vec3 &vec);
 
-      enum class Rotation
+      enum Rotation
       {
-         X,
-         Y,
-         Z
+         RotX,
+         RotY,
+         RotZ
       };
 
       GL::vec3 Normalize(const GL::vec3 &dir);
@@ -153,7 +85,6 @@ namespace GLU
 
          return stream;
       }
-
    }
 }
 

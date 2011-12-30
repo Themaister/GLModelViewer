@@ -12,7 +12,7 @@
 
 namespace GLU
 {
-   enum class Attr
+   enum Attr
    {
       Vertex,
       Normal,
@@ -20,7 +20,7 @@ namespace GLU
       Elem
    };
 
-   static void parse_indices(char *list, unsigned indices[3], const std::array<size_t, 3> &offsets)
+   static void parse_indices(char *list, size_t indices[3], size_t offsets[3])
    {
       for (unsigned i = 0; i < 3; i++)
          indices[i] = 0;
@@ -41,7 +41,7 @@ namespace GLU
       }
    }
 
-   static bool get_attr(char *line, Attr &attr, float elems[3], unsigned indices[3][3], const std::array<size_t, 3> &offsets)
+   static bool get_attr(char *line, Attr &attr, float elems[3], size_t indices[3][3], size_t offsets[3])
    {
       char *elem = std::strtok(line, " ");
       if (!elem)
@@ -49,17 +49,17 @@ namespace GLU
 
       std::string vert_type = elem;
       if (vert_type == "v")
-         attr = Attr::Vertex;
+         attr = Vertex;
       else if (vert_type == "vn")
-         attr = Attr::Normal;
+         attr = Normal;
       else if (vert_type == "vt")
-         attr = Attr::Texture;
+         attr = Texture;
       else if (vert_type == "f")
-         attr = Attr::Elem;
+         attr = Elem;
       else
          return false;
 
-      if (attr == Attr::Elem)
+      if (attr == Elem)
       {
          for (unsigned i = 0; i < 3 && elem; i++)
          {
@@ -76,18 +76,18 @@ namespace GLU
          {
             elem = std::strtok(nullptr, " ");
             if (elem)
-               elems[i] = strtof(elem, nullptr);
+               elems[i] = static_cast<float>(strtod(elem, nullptr));
          }
       }
 
       return true;
    }
 
-   typedef std::vector<std::array<float, 3>> vec3;
-   typedef std::vector<std::array<float, 2>> vec2;
+   typedef std::vector<std::array<float, 3>> lvec3;
+   typedef std::vector<std::array<float, 2>> lvec2;
 
    static GL::Geo::Triangle triangle_from_indices(
-         const vec3 &vertices, const vec3 &normals, const vec2 &tex_coords, unsigned indices[3][3])
+         const lvec3 &vertices, const lvec3 &normals, const lvec2 &tex_coords, size_t indices[3][3])
    {
       GL::Geo::Triangle tri;
       std::memset(&tri, 0, sizeof(tri));
@@ -96,7 +96,7 @@ namespace GLU
       {
          if (indices[i][0])
          {
-            unsigned real_indice = indices[i][0] - 1;
+            size_t real_indice = indices[i][0] - 1;
             if (real_indice >= vertices.size())
                throw GL::Exception("Object face index exceeds maximum recorded vertices!");
 
@@ -106,7 +106,7 @@ namespace GLU
 
          if (indices[i][1])
          {
-            unsigned real_indice = indices[i][1] - 1;
+            size_t real_indice = indices[i][1] - 1;
             if (real_indice >= tex_coords.size())
                throw GL::Exception("Object face index exceeds maximum recorded texture coordinates!");
 
@@ -116,7 +116,7 @@ namespace GLU
 
          if (indices[i][2])
          {
-            unsigned real_indice = indices[i][2] - 1;
+            size_t real_indice = indices[i][2] - 1;
             if (real_indice >= normals.size())
                throw GL::Exception("Object face index exceeds maximum recorded normal coordinates!");
 
@@ -131,9 +131,9 @@ namespace GLU
    std::vector<GL::Geo::Triangle> LoadObject(const std::string &path)
    {
       std::vector<GL::Geo::Triangle> triangles;
-      vec3 vertices;
-      vec3 normals;
-      vec2 tex_coords;
+      lvec3 vertices;
+      lvec3 normals;
+      lvec2 tex_coords;
 
       std::fstream file(path, std::ios::in);
       if (!file.is_open())
@@ -142,31 +142,53 @@ namespace GLU
       while (!file.eof())
       {
          char buf_[256];
-         std::string buf;
          file.getline(buf_, sizeof(buf_));
-         buf = buf_;
+         if (file.bad())
+            throw GL::Exception("Failed to load object!");
+
+         std::string buf(buf_);
 
          float elems[3];
-         unsigned indices[3][3];
+         size_t indices[3][3];
          Attr attr;
-         if (get_attr(&buf[0], attr, elems, indices,
-                  {{ vertices.size(), tex_coords.size(), normals.size() }}))
+         size_t arr[3] = { vertices.size(), tex_coords.size(), normals.size() };
+
+         std::vector<char> mut_buf(buf.begin(), buf.end());
+         mut_buf.push_back('\0');
+
+         if (get_attr(mut_buf.data(), attr, elems, indices, arr))
          {
             switch (attr)
             {
-               case Attr::Vertex:
-                  vertices.push_back({{elems[0], elems[1], elems[2]}});
-                  break;
+               case Vertex:
+               {
+                  std::array<float, 3> arr;
+                  for (unsigned i = 0; i < 3; i++)
+                     arr[i] = elems[i];
 
-               case Attr::Texture:
-                  tex_coords.push_back({{elems[0], elems[1]}});
+                  vertices.push_back(arr);
                   break;
+               }
 
-               case Attr::Normal:
-                  normals.push_back({{elems[0], elems[1], elems[2]}});
+               case Texture:
+               {
+                  std::array<float, 2> arr;
+                  for (unsigned i = 0; i < 2; i++)
+                     arr[i] = elems[i];
+                  tex_coords.push_back(arr);
                   break;
+               }
 
-               case Attr::Elem:
+               case Normal:
+               {
+                  std::array<float, 3> arr;
+                  for (unsigned i = 0; i < 3; i++)
+                     arr[i] = elems[i];
+                  normals.push_back(arr);
+                  break;
+               }
+
+               case Elem:
                   triangles.push_back(triangle_from_indices(vertices, normals, tex_coords, indices));
                   break;
 
@@ -179,14 +201,14 @@ namespace GLU
       return triangles;
    }
 
-   std::vector<GL::Mesh::Ptr> LoadTexturedMeshes(const std::string &path)
+   std::vector<std::shared_ptr<GL::Mesh>> LoadTexturedMeshes(const std::string &path)
    {
-      std::vector<GL::Mesh::Ptr> meshes;
+      std::vector<std::shared_ptr<GL::Mesh>> meshes;
       std::vector<GL::Geo::Triangle> triangles;
 
-      vec3 vertices;
-      vec3 normals;
-      vec2 tex_coords;
+      lvec3 vertices;
+      lvec3 normals;
+      lvec2 tex_coords;
 
       std::fstream file(path, std::ios::in);
       if (!file.is_open())
@@ -200,20 +222,22 @@ namespace GLU
          directory = "";
 
       std::string current_material;
-      std::map<std::string, GL::Texture::Ptr> tex_map;
+      std::map<std::string, std::shared_ptr<GL::Texture>> tex_map;
 
       while (!file.eof())
       {
          char buf_[256];
-         std::string buf;
          file.getline(buf_, sizeof(buf_));
-         buf = buf_;
+         if (file.bad())
+            throw GL::Exception("Failed to load object!");
+
+         std::string buf(buf_);
 
          if (std::strstr(buf.c_str(), "texture") == buf.c_str())
          {
             if (triangles.size() > 0)
             {
-               meshes.push_back(GL::Mesh::shared(triangles));
+               meshes.push_back(std::make_shared<GL::Mesh>(triangles));
                if (current_material.size() > 0)
                {
                   auto ptr = tex_map[current_material];
@@ -221,7 +245,7 @@ namespace GLU
                      meshes.back()->set_texture(ptr);
                   else
                   {
-                     auto tex = GL::Texture::shared(current_material);
+                     auto tex = std::make_shared<GL::Texture>(current_material);
                      meshes.back()->set_texture(tex);
                      tex_map[current_material] = tex;
                   }
@@ -238,26 +262,45 @@ namespace GLU
          }
 
          float elems[3];
-         unsigned indices[3][3];
+         size_t indices[3][3];
          Attr attr;
-         if (get_attr(&buf[0], attr, elems, indices,
-                  {{ vertices.size(), tex_coords.size(), normals.size() }}))
+         size_t arr[3] = { vertices.size(), tex_coords.size(), normals.size() };
+
+         std::vector<char> mut_buf(buf.begin(), buf.end());
+         mut_buf.push_back('\0');
+
+         if (get_attr(mut_buf.data(), attr, elems, indices, arr))
          {
             switch (attr)
             {
-               case Attr::Vertex:
-                  vertices.push_back({{elems[0], elems[1], elems[2]}});
+               case Vertex:
+               {
+                  std::array<float, 3> arr;
+                  for (unsigned i = 0; i < 3; i++)
+                     arr[i] = elems[i];
+                  vertices.push_back(arr);
                   break;
+               }
 
-               case Attr::Normal:
-                  normals.push_back({{elems[0], elems[1], elems[2]}});
+               case Texture:
+               {
+                  std::array<float, 2> arr;
+                  for (unsigned i = 0; i < 2; i++)
+                     arr[i] = elems[i];
+                  tex_coords.push_back(arr);
                   break;
-                   
-               case Attr::Texture:
-                  tex_coords.push_back({{elems[0], elems[1]}});
-                  break;
+               }
 
-               case Attr::Elem:
+               case Normal:
+               {
+                  std::array<float, 3> arr;
+                  for (unsigned i = 0; i < 3; i++)
+                     arr[i] = elems[i];
+                  normals.push_back(arr);
+                  break;
+               }
+
+               case Elem:
                   triangles.push_back(triangle_from_indices(vertices, normals, tex_coords, indices));
                   break;
 
@@ -269,7 +312,7 @@ namespace GLU
 
       if (triangles.size() > 0)
       {
-         meshes.push_back(GL::Mesh::shared(triangles));
+         meshes.push_back(std::make_shared<GL::Mesh>(triangles));
          if (current_material.size() > 0)
          {
             auto ptr = tex_map[current_material];
@@ -277,7 +320,7 @@ namespace GLU
                meshes.back()->set_texture(ptr);
             else
             {
-               auto tex = GL::Texture::shared(current_material);
+               auto tex = std::make_shared<GL::Texture>(current_material);
                meshes.back()->set_texture(tex);
                tex_map[current_material] = tex;
             }

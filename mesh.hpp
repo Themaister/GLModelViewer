@@ -12,14 +12,13 @@
 
 namespace GL
 {
-   class Mesh : private GLU::SmartDefs<Mesh>
+   class Mesh
    {
       public:
-         DECL_SHARED(Mesh);
          Mesh(const std::string &obj);
          Mesh(const std::vector<Geo::Triangle> &triangles);
          virtual void render();
-         static void set_shader(Program::Ptr shader);
+         static void set_shader(std::shared_ptr<Program> shader);
 
          static void set_projection(const GLMatrix &matrix);
          static void set_camera(const GLMatrix &matrix);
@@ -29,7 +28,7 @@ namespace GL
          static void set_light_transform(const GLMatrix &matrix);
          void set_transform(const GLMatrix &matrix);
          void set_normal(const GLMatrix &matrix);
-         void set_texture(Texture::Ptr tex);
+         void set_texture(std::shared_ptr<Texture> tex);
 
          static void set_light(unsigned index,
                const vec3 &pos, const vec3 &color);
@@ -37,12 +36,13 @@ namespace GL
          static void set_ambient(const vec3 &color);
 
       private:
-         unsigned num_vertices;
+         void operator=(const Mesh&);
+         GLsizei num_vertices;
          Buffer vbo;
          VAO vao;
 
-         static Program::Ptr shader;
-         Texture::Ptr tex;
+         static std::shared_ptr<Program> shader;
+         std::shared_ptr<Texture> tex;
 
          struct Transforms
          {

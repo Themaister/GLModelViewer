@@ -9,7 +9,7 @@
 namespace GLU
 {
    std::vector<GL::Geo::Triangle> LoadObject(const std::string &path);
-   std::vector<GL::Mesh::Ptr> LoadTexturedMeshes(const std::string &path);
+   std::vector<std::shared_ptr<GL::Mesh>> LoadTexturedMeshes(const std::string &path);
 }
 
 #endif

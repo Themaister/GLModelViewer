@@ -18,7 +18,7 @@ namespace GL
       load_object(triangles);
    }
 
-   void Mesh::set_shader(Program::Ptr shader_)
+   void Mesh::set_shader(std::shared_ptr<Program> shader_)
    {
       shader = shader_;
    }
@@ -44,7 +44,7 @@ namespace GL
    {
       vao.bind();
       vbo.bind();
-      num_vertices = triangles.size() * 3;
+      num_vertices = static_cast<GLsizei>(triangles.size() * 3);
 
       GLSYM(glBufferData)(GL_ARRAY_BUFFER, triangles.size() * sizeof(Geo::Triangle), &triangles[0], GL_STATIC_DRAW);
 
@@ -69,7 +69,7 @@ namespace GL
       load_object(GLU::LoadObject(obj));
    }
 
-   void Mesh::set_texture(Texture::Ptr tex)
+   void Mesh::set_texture(std::shared_ptr<Texture> tex)
    {
       this->tex = tex;
    }
@@ -180,7 +180,7 @@ namespace GL
             viewport_size(0), viewport_size(1));
    }
 
-   Program::Ptr Mesh::shader;
+   std::shared_ptr<Program> Mesh::shader;
    Mesh::Transforms Mesh::transforms;
    Mesh::Lights Mesh::lights;
    std::array<bool, Mesh::max_lights> Mesh::light_enabled;

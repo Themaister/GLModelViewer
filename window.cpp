@@ -1,12 +1,13 @@
 #include "window.hpp"
 #include <iostream>
+#include <vector>
 
 namespace GL
 {
 #ifdef DEBUG
    extern "C"
    {
-      static void debug_cb(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *message, GLvoid*)
+      static void APIENTRY debug_cb(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *message, GLvoid*)
       {
          std::cerr << "GL DEBUG: " << message << std::endl;
       }
@@ -44,14 +45,14 @@ namespace GL
       sgl_deinit();
    }
 
-   Window::Ptr Window::m_ptr;
+   std::shared_ptr<Window> Window::m_ptr;
 
-   Window::Ptr Window::get(unsigned width, unsigned height,
+   std::shared_ptr<Window> Window::get(unsigned width, unsigned height,
          const std::pair<unsigned, unsigned> &gl_version, bool fullscreen)
    {
       if (!m_ptr)
       {
-         m_ptr = Window::Ptr(new Window(width, height,
+         m_ptr = std::shared_ptr<Window>(new Window(width, height,
                   gl_version, fullscreen));
       }
 
@@ -63,7 +64,7 @@ namespace GL
       return m_ptr;
    }
 
-   Window::Ptr Window::get()
+   std::shared_ptr<Window> Window::get()
    {
       return m_ptr;
    }
@@ -86,9 +87,11 @@ namespace GL
    {
       // GL 1.1 stuff is not found dynamically in Windows. :(
       // Statically initialize them.
+
+      struct mapper { const char *sym; sgl_function_t func; };
+      
 #define _D(sym) { #sym, reinterpret_cast<sgl_function_t>(sym) }
-      static const std::vector<std::pair<std::string, sgl_function_t>>
-         bind_map = {
+      static const mapper bind_map[] = {
             _D(glEnable),
             _D(glBlendFunc),
             _D(glClearColor),
@@ -106,8 +109,8 @@ namespace GL
          };
 #undef _D
 
-      for (auto &bind : bind_map)
-         sym_map[bind.first] = bind.second;
+      for (auto itr = std::begin(bind_map); itr != std::end(bind_map); ++itr)
+         sym_map[itr->sym] = itr->func;
    }
 
    void Window::vsync(bool activate)
@@ -118,7 +121,7 @@ namespace GL
    bool Window::check_resize(int &w, int &h)
    {
       unsigned w_ = w, h_ = h;
-      bool ret = sgl_check_resize(&w_, &h_);
+      bool ret = sgl_check_resize(&w_, &h_) == SGL_TRUE;
       w = w_;
       h = h_;
       return ret;
@@ -132,7 +135,7 @@ namespace GL
          throw Exception(GLU::join("Caught GL error: ", static_cast<unsigned>(err)));
 #endif
 
-      return sgl_is_alive();
+      return sgl_is_alive() == SGL_TRUE;
    }
 
    sgl_function_t& Window::symbol(const std::string &str)
@@ -154,7 +157,7 @@ namespace GL
    {
       auto win = Window::get();
       if (win && win->key_cb)
-         win->key_cb(key, pressed);
+         win->key_cb(key, pressed == SGL_TRUE);
    }
 
    void sgl_mouse_move_cb(int x, int y)

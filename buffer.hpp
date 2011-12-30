@@ -8,43 +8,38 @@
 
 namespace GL
 {
-   class VAO : private GLU::SmartDefs<VAO>, public GLResource
+   class VAO : public GLResource
    {
       public:
-         DECL_SHARED(VAO);
          VAO();
          ~VAO();
          void bind();
 
          static void unbind();
 
-         void operator=(const VAO&) = delete;
-
       private:
+         void operator=(const VAO&);
          GLuint obj;
    };
 
-   class Buffer : private GLU::SmartDefs<Buffer>, public GLResource
+   class Buffer : public GLResource
    {
       public:
-         DECL_SHARED(Buffer);
          Buffer(GLenum type);
          ~Buffer();
          void bind();
 
          static void unbind(GLenum type);
 
-         void operator=(const Buffer&) = delete;
-
       private:
+         void operator=(const Buffer&);
          GLenum type;
          GLuint obj;
    };
 
-   class UniformBuffer : private GLU::SmartDefs<UniformBuffer>, public GLResource
+   class UniformBuffer : public GLResource
    {
       public:
-         DECL_SHARED(UniformBuffer);
          UniformBuffer();
          ~UniformBuffer();
 
@@ -52,10 +47,10 @@ namespace GL
          void bind(unsigned index);
          static void unbind();
 
-         void bind_block(Program::Ptr prog, GLuint block_index);
-         void operator=(const UniformBuffer&) = delete;
+         void bind_block(std::shared_ptr<Program> prog, GLuint block_index);
 
       private:
+         void operator=(const UniformBuffer&);
          GLuint obj;
          unsigned bound_target;
    };

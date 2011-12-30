@@ -31,11 +31,11 @@ namespace GL
       GLenum gl_type;
       switch (type)
       {
-         case Shader::Type::Vertex:
+         case Shader::Vertex:
             gl_type = GL_VERTEX_SHADER;
             break;
 
-         case Shader::Type::Fragment:
+         case Shader::Fragment:
             gl_type = GL_FRAGMENT_SHADER;
             break;
 
@@ -84,8 +84,8 @@ namespace GL
 
    void Program::link()
    {
-      for (auto shader : shaders)
-         GLSYM(glAttachShader)(program, shader->object());
+      for (auto shader = std::begin(shaders); shader != std::end(shaders); ++shader)
+         GLSYM(glAttachShader)(program, (*shader)->object());
 
       GLSYM(glLinkProgram)(program);
       GLint status;
@@ -103,7 +103,7 @@ namespace GL
 
    void Program::add(const std::string &src, Shader::Type type)
    {
-      shaders.push_back(Shader::shared(src, type));
+      shaders.push_back(std::make_shared<Shader>(src, type));
    }
 
    void Program::add(const Shader &shader)
@@ -125,8 +125,8 @@ namespace GL
    {
       if (GLSYM(glIsProgram)(program))
       {
-         for (auto shader : shaders)
-            GLSYM(glDetachShader)(program, shader->object());
+         for (auto shader = std::begin(shaders); shader != std::end(shaders); ++shader)
+            GLSYM(glDetachShader)(program, (*shader)->object());
          GLSYM(glDeleteProgram)(program);
       }
    }

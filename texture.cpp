@@ -45,11 +45,11 @@ namespace GL
    {
       switch (edge)
       {
-         case Texture::Edge::Clamp:
+         case Texture::Clamp:
             return GL_CLAMP;
-         case Texture::Edge::ClampToBorder:
+         case Texture::ClampToBorder:
             return GL_CLAMP_TO_BORDER;
-         case Texture::Edge::Repeat:
+         case Texture::Repeat:
             return GL_REPEAT;
          default:
             throw Exception("Invalid Edge option!");
@@ -60,9 +60,9 @@ namespace GL
    {
       switch (filter)
       {
-         case Texture::Filter::Nearest:
+         case Texture::Nearest:
             return GL_NEAREST;
-         case Texture::Filter::Linear:
+         case Texture::Linear:
             return GL_LINEAR;
          default:
             throw Exception("Invalid Filter option!");

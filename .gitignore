@@ -1,3 +1,11 @@
 *.o
 /modelviewer
+*.exe
+*.suo
+*.opensdf
+*.sdf
+Release
+Debug
+x64
+*.user
 

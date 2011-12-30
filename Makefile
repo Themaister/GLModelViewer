@@ -29,7 +29,13 @@ else
 endif
 
 CXXFLAGS += -Wall -pedantic -std=gnu++0x
-CFLAGS += -Wall -pedantic -std=gnu99
+CFLAGS += -Wall -pedantic
+ifeq ($(platform), win)
+   CFLAGS += -std=c89
+else
+   CFLAGS += -std=gnu99
+endif
+
 ifeq ($(DEBUG), 1)
    CXXFLAGS += -O0 -g
    CFLAGS += -O0 -g

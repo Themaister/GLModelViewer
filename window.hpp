@@ -17,14 +17,12 @@ namespace GL
 
    class SymbolTable;
 
-   class Window : private GLU::SmartDefs<Window>
+   class Window
    {
       public:
-         DECL_SHARED(Window);
-         static Ptr get(unsigned width, unsigned height,
+         static std::shared_ptr<Window> get(unsigned width, unsigned height,
                const std::pair<unsigned, unsigned> &gl_version, bool fullscreen = false);
-         static Ptr get();
-         void operator=(const Window&) = delete;
+         static std::shared_ptr<Window> get();
 
          bool check_resize(int &w, int &h);
          bool alive();
@@ -40,7 +38,8 @@ namespace GL
 
       private:
          Window(unsigned width, unsigned height, const std::pair<unsigned, unsigned> &gl_version, bool fullscreen = false);
-         static Ptr m_ptr;
+         static std::shared_ptr<Window> m_ptr;
+         void operator=(const Window&);
 
          std::function<void (int, bool)> key_cb;
          std::function<void (int, int)> mouse_move_cb;
@@ -64,7 +63,7 @@ namespace GL
          }
 
       private:
-         Window::Ptr win_hold;
+         std::shared_ptr<Window> win_hold;
    };
 }
 

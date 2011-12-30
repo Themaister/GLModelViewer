@@ -4,29 +4,28 @@
 #include "gl.hpp"
 #include "utils.hpp"
 #include <list>
+#include <vector>
 #include <utility>
+#include <stdint.h>
 
 namespace GL
 {
-   class Texture : private GLU::SmartDefs<Texture>, public GLResource
+   class Texture : public GLResource
    {
       public:
-         DECL_SHARED(Texture);
-
          Texture(const std::string &path);
          ~Texture();
 
-         enum class Edge : unsigned { Clamp, ClampToBorder, Repeat };
-         enum class Filter : unsigned { Nearest, Linear };
+         enum Edge { Clamp, ClampToBorder, Repeat };
+         enum Filter { Nearest, Linear };
 
          void bind(unsigned index = 0,
-               Filter filt = Filter::Linear,
-               Edge edge = Edge::Repeat);
+               Filter filt = Linear,
+               Edge edge = Repeat);
          void unbind();
 
-         void operator=(const Texture&) = delete;
-
       private:
+         void operator=(const Texture&);
          GLuint obj;
          int bound_index;
 
@@ -42,10 +41,9 @@ namespace GL
          Image load_tga(const std::string &path);
    };
 
-   class RenderBuffer : private GLU::SmartDefs<RenderBuffer>, public GLResource
+   class RenderBuffer : public GLResource
    {
       public:
-         DECL_SHARED(RenderBuffer);
          RenderBuffer(unsigned width, unsigned height);
          ~RenderBuffer();
 
@@ -54,10 +52,9 @@ namespace GL
          void unbind();
          void bind_texture(unsigned index);
          void unbind_texture();
-         
-         void operator=(const RenderBuffer&) = delete;
 
       protected:
+         void operator=(const RenderBuffer&);
          RenderBuffer();
          GLuint fb_obj;
          GLuint tex;
@@ -66,10 +63,9 @@ namespace GL
          unsigned width, height;
    };
 
-   class ShadowBuffer : private GLU::SmartDefs<ShadowBuffer>, public RenderBuffer
+   class ShadowBuffer : public RenderBuffer
    {
       public:
-         DECL_SHARED(ShadowBuffer);
          ShadowBuffer(unsigned width, unsigned height);
    };
 }
