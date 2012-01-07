@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <utility>
 #include <array>
+#include <type_traits>
 
 namespace GL
 {
@@ -28,10 +29,24 @@ namespace GL
             std::copy(list, list + N, vec.begin());
          }
 
-         Vector(T t1)                   { set_array(t1); }
-         Vector(T t1, T t2)             { set_array(t1, t2); }
-         Vector(T t1, T t2, T t3)       { set_array(t1, t2, t3); }
-         Vector(T t1, T t2, T t3, T t4) { set_array(t1, t2, t3, t4); }
+         template <class U>
+         Vector(typename std::enable_if<N == 1, U>::type t1)
+                                         { vec[0] = t1; }
+
+         template <class U>
+         Vector(typename std::enable_if<N == 2, U>::type t1,
+               U t2 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2;}
+
+         template <class U>
+         Vector(typename std::enable_if<N == 3, U>::type t1,
+               U t2 = static_cast<U>(0),
+               U t3 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2; vec[2] = t3; }
+
+         template <class U>
+         Vector(typename std::enable_if<N == 4, U>::type t1,
+               U t2 = static_cast<U>(0),
+               U t3 = static_cast<U>(0),
+               U t4 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2; vec[2] = t3; vec[3] = t4; }
 
          T* operator()()
          {
@@ -111,27 +126,6 @@ namespace GL
 
       private:
          std::array<T, N> vec;
-
-         void set_array(T t1 = static_cast<T>(0),
-            T t2 = static_cast<T>(0),
-            T t3 = static_cast<T>(0),
-            T t4 = static_cast<T>(0))
-         {
-            switch (N)
-            {
-               case 4:
-                  vec[3] = t4;
-               case 3:
-                  vec[2] = t3;
-               case 2:
-                  vec[1] = t2;
-               case 1:
-                  vec[0] = t1;
-                  break;
-               default:
-                  throw GL::Exception("Invalid vector size!");
-            }
-         }
    };
 
    template <class T>
