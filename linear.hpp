@@ -31,22 +31,39 @@ namespace GL
 
          template <class U>
          Vector(typename std::enable_if<N == 1, U>::type t1)
-                                         { vec[0] = t1; }
+         {
+            vec[0] = static_cast<T>(t1);
+         }
 
          template <class U>
          Vector(typename std::enable_if<N == 2, U>::type t1,
-               U t2 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2;}
+            U t2 = static_cast<U>(0))
+         {
+            vec[0] = static_cast<T>(t1);
+            vec[1] = static_cast<T>(t2);
+         }
 
          template <class U>
          Vector(typename std::enable_if<N == 3, U>::type t1,
                U t2 = static_cast<U>(0),
-               U t3 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2; vec[2] = t3; }
+               U t3 = static_cast<U>(0))
+         {
+            vec[0] = static_cast<T>(t1);
+            vec[1] = static_cast<T>(t2);
+            vec[2] = static_cast<T>(t3);
+         }
 
          template <class U>
          Vector(typename std::enable_if<N == 4, U>::type t1,
                U t2 = static_cast<U>(0),
                U t3 = static_cast<U>(0),
-               U t4 = static_cast<U>(0)) { vec[0] = t1; vec[1] = t2; vec[2] = t3; vec[3] = t4; }
+               U t4 = static_cast<U>(0))
+         {
+            vec[0] = static_cast<T>(t1);
+            vec[1] = static_cast<T>(t2);
+            vec[2] = static_cast<T>(t3);
+            vec[3] = static_cast<T>(t4);
+         }
 
          T* operator()()
          {
